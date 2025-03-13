@@ -13,10 +13,14 @@ import { Button } from './ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from './ui/card';
 import { Alert, AlertDescription } from './ui/alert';
 
+// Define a more precise schema for the tags field
 const projectSchema = z.object({
   title: z.string().min(2, { message: 'Title must be at least 2 characters' }),
   description: z.string().min(10, { message: 'Description must be at least 10 characters' }),
-  tags: z.string().transform(val => val.split(',').map(tag => tag.trim())).or(z.array(z.string())),
+  tags: z.union([
+    z.string().transform(val => val.split(',').map(tag => tag.trim())),
+    z.array(z.string())
+  ]),
   image: z.string().url({ message: 'Please enter a valid image URL' }),
   demoLink: z.string().url({ message: 'Please enter a valid demo URL' }),
   codeLink: z.string().url({ message: 'Please enter a valid code repository URL' }),
@@ -35,7 +39,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ onSubmit }) => {
     defaultValues: {
       title: '',
       description: '',
-      tags: '',
+      tags: [] as string[], // Initialize as empty array instead of empty string
       image: '',
       demoLink: '',
       codeLink: '',
@@ -46,7 +50,8 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ onSubmit }) => {
     // Ensure tags is an array when submitting
     const formattedData = {
       ...data,
-      tags: typeof data.tags === 'string' ? data.tags.split(',').map(tag => tag.trim()) : data.tags
+      // If tags is somehow a string (should not happen with our schema), convert it
+      tags: Array.isArray(data.tags) ? data.tags : data.tags.split(',').map(tag => tag.trim())
     };
     
     onSubmit(formattedData);
@@ -107,7 +112,10 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ onSubmit }) => {
                   <FormControl>
                     <Input 
                       placeholder="React, TypeScript, Tailwind CSS" 
-                      {...field} 
+                      value={Array.isArray(field.value) ? field.value.join(', ') : field.value}
+                      onChange={(e) => {
+                        field.onChange(e.target.value);
+                      }}
                     />
                   </FormControl>
                   <Alert variant="default" className="mt-2 bg-muted/50">
