@@ -16,7 +16,7 @@ import { Alert, AlertDescription } from './ui/alert';
 const projectSchema = z.object({
   title: z.string().min(2, { message: 'Title must be at least 2 characters' }),
   description: z.string().min(10, { message: 'Description must be at least 10 characters' }),
-  tags: z.string().transform(val => val.split(',').map(tag => tag.trim())),
+  tags: z.string().transform(val => val.split(',').map(tag => tag.trim())).or(z.array(z.string())),
   image: z.string().url({ message: 'Please enter a valid image URL' }),
   demoLink: z.string().url({ message: 'Please enter a valid demo URL' }),
   codeLink: z.string().url({ message: 'Please enter a valid code repository URL' }),
@@ -43,7 +43,13 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ onSubmit }) => {
   });
 
   const handleSubmit = (data: ProjectFormValues) => {
-    onSubmit(data);
+    // Ensure tags is an array when submitting
+    const formattedData = {
+      ...data,
+      tags: typeof data.tags === 'string' ? data.tags.split(',').map(tag => tag.trim()) : data.tags
+    };
+    
+    onSubmit(formattedData);
     toast({
       title: "Project Added",
       description: `${data.title} has been added to your portfolio`,
