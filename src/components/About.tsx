@@ -3,6 +3,17 @@ import React from 'react';
 import { Briefcase, GraduationCap, Award, Lightbulb } from 'lucide-react';
 import AnimatedSection from './AnimatedSection';
 
+// Customize your personal information here
+const personalInfo = {
+  background: "Statistics and Data Science",
+  yearsOfExperience: "5+",
+  industries: "finance, healthcare, and e-commerce",
+  degree: "Master's",
+  field: "Data Science",
+  university: "State University",
+  certifications: "Google Data Analytics, Microsoft Power BI, AWS Data Analytics Specialty"
+};
+
 const About: React.FC = () => {
   return (
     <section id="about" className="py-20 bg-gray-50 dark:bg-gray-900/50">
@@ -35,7 +46,7 @@ const About: React.FC = () => {
           <AnimatedSection animation="fade-in-right">
             <h3 className="text-2xl font-bold mb-4 text-portfolio-purple">My Journey</h3>
             <p className="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
-              With a background in [Your Background], I've developed a passion for uncovering the stories hidden within data. 
+              With a background in {personalInfo.background}, I've developed a passion for uncovering the stories hidden within data. 
               My analytical approach combines technical expertise with creative problem-solving to deliver insights that drive business value.
             </p>
             
@@ -47,7 +58,7 @@ const About: React.FC = () => {
                 <div>
                   <h4 className="font-medium text-lg">Professional Experience</h4>
                   <p className="text-gray-600 dark:text-gray-400">
-                    [Your years of experience] years working with data across [industries or domains].
+                    {personalInfo.yearsOfExperience} years working with data across {personalInfo.industries}.
                   </p>
                 </div>
               </div>
@@ -59,7 +70,7 @@ const About: React.FC = () => {
                 <div>
                   <h4 className="font-medium text-lg">Education</h4>
                   <p className="text-gray-600 dark:text-gray-400">
-                    [Your degree] in [Your field] from [Your university].
+                    {personalInfo.degree} in {personalInfo.field} from {personalInfo.university}.
                   </p>
                 </div>
               </div>
@@ -71,7 +82,7 @@ const About: React.FC = () => {
                 <div>
                   <h4 className="font-medium text-lg">Certifications</h4>
                   <p className="text-gray-600 dark:text-gray-400">
-                    [List your relevant certifications in data analysis or related fields].
+                    {personalInfo.certifications}.
                   </p>
                 </div>
               </div>

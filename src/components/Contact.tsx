@@ -4,6 +4,15 @@ import { Mail, Phone, MapPin, Send, Linkedin, Github } from 'lucide-react';
 import AnimatedSection from './AnimatedSection';
 import { useToast } from '@/hooks/use-toast';
 
+// Customize your contact information here
+const contactInfo = {
+  email: "your.email@example.com",
+  phone: "+1 (123) 456-7890",
+  location: "City, State, Country",
+  linkedinUrl: "https://linkedin.com/in/yourusername",
+  githubUrl: "https://github.com/yourusername"
+};
+
 const Contact: React.FC = () => {
   const { toast } = useToast();
   const [formData, setFormData] = useState({
@@ -63,8 +72,8 @@ const Contact: React.FC = () => {
                   </div>
                   <div>
                     <h4 className="font-medium text-gray-700 dark:text-gray-300">Email</h4>
-                    <a href="mailto:your.email@example.com" className="text-portfolio-purple hover:underline">
-                      your.email@example.com
+                    <a href={`mailto:${contactInfo.email}`} className="text-portfolio-purple hover:underline">
+                      {contactInfo.email}
                     </a>
                   </div>
                 </div>
@@ -75,8 +84,8 @@ const Contact: React.FC = () => {
                   </div>
                   <div>
                     <h4 className="font-medium text-gray-700 dark:text-gray-300">Phone</h4>
-                    <a href="tel:+11234567890" className="text-gray-600 dark:text-gray-400 hover:text-portfolio-green">
-                      +1 (123) 456-7890
+                    <a href={`tel:${contactInfo.phone.replace(/\s/g, '')}`} className="text-gray-600 dark:text-gray-400 hover:text-portfolio-green">
+                      {contactInfo.phone}
                     </a>
                   </div>
                 </div>
@@ -88,7 +97,7 @@ const Contact: React.FC = () => {
                   <div>
                     <h4 className="font-medium text-gray-700 dark:text-gray-300">Location</h4>
                     <p className="text-gray-600 dark:text-gray-400">
-                      City, State, Country
+                      {contactInfo.location}
                     </p>
                   </div>
                 </div>
@@ -99,13 +108,17 @@ const Contact: React.FC = () => {
               <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4">Connect With Me</h3>
               <div className="flex gap-4">
                 <a 
-                  href="#" 
+                  href={contactInfo.linkedinUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-portfolio-purple hover:text-white transition-colors"
                 >
                   <Linkedin size={20} />
                 </a>
                 <a 
-                  href="#" 
+                  href={contactInfo.githubUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
                 >
                   <Github size={20} />
