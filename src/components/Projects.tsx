@@ -1,9 +1,11 @@
 
-import React from 'react';
-import { ArrowRight, ExternalLink, Github } from 'lucide-react';
+import React, { useState } from 'react';
+import { ArrowRight, ExternalLink, Github, Plus, FileCode } from 'lucide-react';
 import AnimatedSection from './AnimatedSection';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from './ui/sheet';
+import ProjectForm from './ProjectForm';
 
 // Project type definition to enforce consistency
 interface Project {
@@ -16,8 +18,8 @@ interface Project {
   codeLink: string;
 }
 
-// This is a placeholder for your future projects
-const projectsData: Project[] = [
+// Initial project data
+const initialProjectsData: Project[] = [
   {
     id: 1,
     title: "Sales Data Analysis",
@@ -120,6 +122,17 @@ const ProjectCard: React.FC<{ project: Project; index: number }> = ({ project, i
 };
 
 const Projects: React.FC = () => {
+  const [projects, setProjects] = useState<Project[]>(initialProjectsData);
+
+  const handleAddProject = (formData: Omit<Project, 'id'>) => {
+    const newProject = {
+      ...formData,
+      id: projects.length > 0 ? Math.max(...projects.map(p => p.id)) + 1 : 1,
+    };
+    
+    setProjects([...projects, newProject]);
+  };
+
   return (
     <section id="projects" className="py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -127,13 +140,31 @@ const Projects: React.FC = () => {
           <h2 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-100 mb-4">
             Projects
           </h2>
-          <p className="max-w-3xl mx-auto text-lg text-gray-600 dark:text-gray-300">
+          <p className="max-w-3xl mx-auto text-lg text-gray-600 dark:text-gray-300 mb-6">
             A showcase of my data analysis work, demonstrating my technical skills and business impact.
           </p>
+          
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button className="bg-portfolio-purple hover:bg-portfolio-purple/90">
+                <Plus size={16} className="mr-2" /> Add New Project
+              </Button>
+            </SheetTrigger>
+            <SheetContent className="overflow-y-auto w-full sm:max-w-xl">
+              <SheetHeader className="mb-6">
+                <SheetTitle className="flex items-center gap-2">
+                  <FileCode size={20} /> Add Project to Portfolio
+                </SheetTitle>
+              </SheetHeader>
+              <ProjectForm 
+                onSubmit={handleAddProject}
+              />
+            </SheetContent>
+          </Sheet>
         </AnimatedSection>
         
         <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
-          {projectsData.map((project, index) => (
+          {projects.map((project, index) => (
             <ProjectCard key={project.id} project={project} index={index} />
           ))}
         </div>
