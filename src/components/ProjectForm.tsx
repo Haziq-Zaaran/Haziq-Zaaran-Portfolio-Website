@@ -18,7 +18,7 @@ const projectSchema = z.object({
   title: z.string().min(2, { message: 'Title must be at least 2 characters' }),
   description: z.string().min(10, { message: 'Description must be at least 10 characters' }),
   tags: z.union([
-    z.string().transform(val => val.split(',').map(tag => tag.trim())),
+    z.string(),
     z.array(z.string())
   ]),
   image: z.string().url({ message: 'Please enter a valid image URL' }),
@@ -47,13 +47,21 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ onSubmit }) => {
   });
 
   const handleSubmit = (data: ProjectFormValues) => {
-    // Ensure tags is always an array before submitting
+    // Safely process tags based on their actual type
+    let processedTags: string[] = [];
+    
+    if (typeof data.tags === 'string') {
+      // If it's a string, split by commas and trim each tag
+      processedTags = data.tags.split(',').map(tag => tag.trim());
+    } else if (Array.isArray(data.tags)) {
+      // If it's already an array, use it directly
+      processedTags = data.tags;
+    }
+    
+    // Create the formatted data with the properly processed tags
     const formattedData = {
       ...data,
-      // Fix the type issue by properly checking the type before calling split
-      tags: typeof data.tags === 'string' 
-        ? data.tags.split(',').map(tag => tag.trim()) 
-        : (Array.isArray(data.tags) ? data.tags : [])
+      tags: processedTags
     };
     
     onSubmit(formattedData);
