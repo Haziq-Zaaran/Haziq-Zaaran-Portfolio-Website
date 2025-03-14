@@ -3,17 +3,12 @@ import React, { useState } from 'react';
 import { Mail, Phone, MapPin, Send, Linkedin, Github } from 'lucide-react';
 import AnimatedSection from './AnimatedSection';
 import { useToast } from '@/hooks/use-toast';
-
-// Customize your contact information here
-const contactInfo = {
-  email: "your.email@example.com",
-  phone: "+1 (123) 456-7890",
-  location: "City, State, Country",
-  linkedinUrl: "https://linkedin.com/in/yourusername",
-  githubUrl: "https://github.com/yourusername"
-};
+import { usePortfolio } from '@/contexts/PortfolioContext';
 
 const Contact: React.FC = () => {
+  const { portfolioData } = usePortfolio();
+  const { contactInfo } = portfolioData;
+  
   const { toast } = useToast();
   const [formData, setFormData] = useState({
     name: '',

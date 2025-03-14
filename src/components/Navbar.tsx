@@ -1,130 +1,180 @@
 
 import React, { useState, useEffect } from 'react';
-import { MenuIcon, X } from 'lucide-react';
+import { Menu, X, Moon, Sun, LogIn, User } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 
-const Navbar: React.FC = () => {
-  const [activeSection, setActiveSection] = useState('home');
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  const sections = [
-    { id: 'home', label: 'Home' },
-    { id: 'about', label: 'About Me' },
-    { id: 'projects', label: 'Projects' },
-    { id: 'dashboard', label: 'Dashboard' },
-    { id: 'skills', label: 'Skills' },
-    { id: 'resume', label: 'Resume' },
-    { id: 'contact', label: 'Contact' }
-  ];
+const Navbar = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
-      // Update navbar style on scroll
-      setIsScrolled(window.scrollY > 20);
-      
-      // Update active section based on scroll position
-      const sectionElements = sections.map(section => ({
-        id: section.id,
-        element: document.getElementById(section.id)
-      })).filter(section => section.element !== null);
-      
-      const currentPosition = window.scrollY + 100;
-      
-      for (let i = sectionElements.length - 1; i >= 0; i--) {
-        const section = sectionElements[i];
-        if (section.element && section.element.offsetTop <= currentPosition) {
-          setActiveSection(section.id);
-          break;
-        }
-      }
+      setScrolled(window.scrollY > 20);
     };
-    
+
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    
+    // Check user's preference
+    const isDark = localStorage.getItem('darkMode') === 'true';
+    setDarkMode(isDark);
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+    }
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
   }, []);
 
-  const scrollToSection = (sectionId: string) => {
-    const element = document.getElementById(sectionId);
-    if (element) {
-      window.scrollTo({
-        top: element.offsetTop - 80,
-        behavior: 'smooth'
-      });
-      setActiveSection(sectionId);
-      setMobileMenuOpen(false);
+  const toggleDarkMode = () => {
+    const newDarkMode = !darkMode;
+    setDarkMode(newDarkMode);
+    localStorage.setItem('darkMode', String(newDarkMode));
+    
+    if (newDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
     }
   };
 
+  const navLinks = [
+    { href: '#about', label: 'About' },
+    { href: '#projects', label: 'Projects' },
+    { href: '#dashboard', label: 'Dashboards' },
+    { href: '#skills', label: 'Skills' },
+    { href: '#resume', label: 'Resume' },
+    { href: '#contact', label: 'Contact' },
+  ];
+
   return (
-    <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-      isScrolled ? 'bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm shadow-sm' : 'bg-transparent'
-    }`}>
+    <header className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled ? 'bg-white/90 dark:bg-gray-900/90 backdrop-blur-md shadow-sm' : 'bg-transparent'}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center py-4 md:py-6">
-          <a 
-            href="#home" 
-            className="text-xl font-bold text-portfolio-purple transition-colors duration-300"
-            onClick={(e) => {
-              e.preventDefault();
-              scrollToSection('home');
-            }}
-          >
-            Data<span className="text-portfolio-gold">Analyst</span>
-          </a>
-          
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-1">
-            {sections.map(section => (
-              <a
-                key={section.id}
-                href={`#${section.id}`}
-                className={`nav-link ${activeSection === section.id ? 'active-nav-link' : ''}`}
-                onClick={(e) => {
-                  e.preventDefault();
-                  scrollToSection(section.id);
-                }}
+        <div className="flex justify-between items-center py-4 md:justify-start md:space-x-10">
+          <div className="flex justify-start lg:w-0 lg:flex-1">
+            <a href="#" className="text-xl font-bold text-portfolio-purple">
+              Data<span className="text-portfolio-gold">Analyst</span>
+            </a>
+          </div>
+
+          {/* Mobile menu button */}
+          <div className="md:hidden">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => setIsOpen(!isOpen)}
+              className="inline-flex items-center justify-center"
+            >
+              {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </Button>
+          </div>
+
+          {/* Desktop nav */}
+          <nav className="hidden md:flex space-x-10">
+            {navLinks.map((link) => (
+              <a 
+                key={link.href} 
+                href={link.href}
+                className="text-base font-medium text-gray-700 dark:text-gray-200 hover:text-portfolio-purple transition"
               >
-                {section.label}
+                {link.label}
               </a>
             ))}
           </nav>
-          
-          {/* Mobile Menu Button */}
-          <button 
-            className="md:hidden text-gray-700 dark:text-gray-300 hover:text-portfolio-purple transition-colors" 
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            {mobileMenuOpen ? <X size={24} /> : <MenuIcon size={24} />}
-          </button>
+
+          <div className="hidden md:flex items-center justify-end md:flex-1 lg:w-0 space-x-4">
+            <Button 
+              onClick={toggleDarkMode} 
+              variant="ghost" 
+              size="icon"
+              className="text-gray-700 dark:text-gray-200"
+            >
+              {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+            </Button>
+
+            {isAuthenticated ? (
+              <Button 
+                onClick={() => navigate('/admin')}
+                variant="outline"
+                className="ml-2"
+              >
+                <User className="mr-2 h-4 w-4" />
+                Admin
+              </Button>
+            ) : (
+              <Button 
+                onClick={() => navigate('/login')}
+                variant="outline"
+                className="ml-2"
+              >
+                <LogIn className="mr-2 h-4 w-4" />
+                Login
+              </Button>
+            )}
+          </div>
         </div>
       </div>
-      
-      {/* Mobile Navigation */}
-      {mobileMenuOpen && (
-        <nav className="md:hidden bg-white dark:bg-gray-900 shadow-lg">
-          <div className="flex flex-col py-4">
-            {sections.map(section => (
-              <a
-                key={section.id}
-                href={`#${section.id}`}
-                className={`py-3 px-6 ${
-                  activeSection === section.id 
-                    ? 'bg-portfolio-purple/10 text-portfolio-purple font-medium border-l-4 border-portfolio-purple' 
-                    : 'text-gray-700 dark:text-gray-300'
-                }`}
-                onClick={(e) => {
-                  e.preventDefault();
-                  scrollToSection(section.id);
+
+      {/* Mobile menu */}
+      <div className={`md:hidden ${isOpen ? 'block' : 'hidden'}`}>
+        <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white dark:bg-gray-900 shadow-lg">
+          {navLinks.map((link) => (
+            <a
+              key={link.href}
+              href={link.href}
+              className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-200 hover:text-portfolio-purple hover:bg-gray-50 dark:hover:bg-gray-800"
+              onClick={() => setIsOpen(false)}
+            >
+              {link.label}
+            </a>
+          ))}
+          <div className="flex items-center justify-between px-3 py-2">
+            <Button 
+              onClick={toggleDarkMode} 
+              variant="ghost" 
+              size="sm"
+              className="text-gray-700 dark:text-gray-200"
+            >
+              {darkMode ? <Sun className="h-4 w-4 mr-2" /> : <Moon className="h-4 w-4 mr-2" />}
+              {darkMode ? 'Light Mode' : 'Dark Mode'}
+            </Button>
+
+            {isAuthenticated ? (
+              <Button 
+                onClick={() => {
+                  navigate('/admin');
+                  setIsOpen(false);
                 }}
+                variant="outline"
+                size="sm"
               >
-                {section.label}
-              </a>
-            ))}
+                <User className="mr-2 h-4 w-4" />
+                Admin
+              </Button>
+            ) : (
+              <Button 
+                onClick={() => {
+                  navigate('/login');
+                  setIsOpen(false);
+                }}
+                variant="outline"
+                size="sm"
+              >
+                <LogIn className="mr-2 h-4 w-4" />
+                Login
+              </Button>
+            )}
           </div>
-        </nav>
-      )}
+        </div>
+      </div>
     </header>
   );
 };
 
 export default Navbar;
+

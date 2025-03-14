@@ -6,57 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from './ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from './ui/sheet';
 import ProjectForm from './ProjectForm';
-
-// Project type definition to enforce consistency
-interface Project {
-  id: number;
-  title: string;
-  description: string;
-  tags: string[];
-  image: string;
-  demoLink: string;
-  codeLink: string;
-}
-
-// Initial project data
-const initialProjectsData: Project[] = [
-  {
-    id: 1,
-    title: "Sales Data Analysis",
-    description: "Analyzed 5 years of sales data to identify trends and opportunities for growth, resulting in a 15% increase in revenue.",
-    tags: ["Tableau", "SQL", "Excel"],
-    image: "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-    demoLink: "#",
-    codeLink: "#"
-  },
-  {
-    id: 2,
-    title: "Customer Segmentation",
-    description: "Developed a customer segmentation model that improved marketing campaign efficiency by 23%.",
-    tags: ["Python", "Scikit-learn", "Pandas"],
-    image: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-    demoLink: "#",
-    codeLink: "#"
-  },
-  {
-    id: 3,
-    title: "Predictive Analytics Dashboard",
-    description: "Created an interactive dashboard that forecasts future sales with 92% accuracy.",
-    tags: ["Power BI", "R", "DAX"],
-    image: "https://images.unsplash.com/photo-1518770660439-4636190af475?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-    demoLink: "#",
-    codeLink: "#"
-  },
-  {
-    id: 4,
-    title: "Supply Chain Optimization",
-    description: "Optimized inventory levels across 12 warehouses, reducing costs by 18% while maintaining service levels.",
-    tags: ["Python", "Optimization", "Visualization"],
-    image: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-    demoLink: "#",
-    codeLink: "#"
-  }
-];
+import { usePortfolio, Project } from '@/contexts/PortfolioContext';
 
 const ProjectCard: React.FC<{ project: Project; index: number }> = ({ project, index }) => {
   return (
@@ -122,15 +72,13 @@ const ProjectCard: React.FC<{ project: Project; index: number }> = ({ project, i
 };
 
 const Projects: React.FC = () => {
-  const [projects, setProjects] = useState<Project[]>(initialProjectsData);
+  const { portfolioData, addProject } = usePortfolio();
+  
+  // Filter out hidden projects for display
+  const visibleProjects = portfolioData.projects.filter(project => !project.isHidden);
 
-  const handleAddProject = (formData: Omit<Project, 'id'>) => {
-    const newProject = {
-      ...formData,
-      id: projects.length > 0 ? Math.max(...projects.map(p => p.id)) + 1 : 1,
-    };
-    
-    setProjects([...projects, newProject]);
+  const handleAddProject = (formData: Omit<Project, 'id' | 'isHidden'>) => {
+    addProject(formData);
   };
 
   return (
@@ -164,7 +112,7 @@ const Projects: React.FC = () => {
         </AnimatedSection>
         
         <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
-          {projects.map((project, index) => (
+          {visibleProjects.map((project, index) => (
             <ProjectCard key={project.id} project={project} index={index} />
           ))}
         </div>
@@ -174,8 +122,10 @@ const Projects: React.FC = () => {
             Want to see more of my projects?
           </p>
           <a 
-            href="#" 
+            href={portfolioData.contactInfo.githubUrl} 
             className="inline-flex items-center gap-2 text-portfolio-purple font-medium hover:underline"
+            target="_blank"
+            rel="noopener noreferrer"
           >
             Visit my GitHub <Github size={16} />
           </a>
