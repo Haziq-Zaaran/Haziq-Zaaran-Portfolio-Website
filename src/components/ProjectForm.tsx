@@ -13,7 +13,7 @@ import { Button } from './ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from './ui/card';
 import { Alert, AlertDescription } from './ui/alert';
 
-// Define a more precise schema for the tags field
+// Define the schema with proper type handling for tags
 const projectSchema = z.object({
   title: z.string().min(2, { message: 'Title must be at least 2 characters' }),
   description: z.string().min(10, { message: 'Description must be at least 10 characters' }),
@@ -39,7 +39,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ onSubmit }) => {
     defaultValues: {
       title: '',
       description: '',
-      tags: [] as string[], // Initialize as empty array instead of empty string
+      tags: [] as string[], // Initialize as empty array
       image: '',
       demoLink: '',
       codeLink: '',
@@ -47,11 +47,12 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ onSubmit }) => {
   });
 
   const handleSubmit = (data: ProjectFormValues) => {
-    // Ensure tags is an array when submitting
+    // Ensure tags is always an array before submitting
     const formattedData = {
       ...data,
-      // If tags is somehow a string (should not happen with our schema), convert it
-      tags: Array.isArray(data.tags) ? data.tags : data.tags.split(',').map(tag => tag.trim())
+      tags: typeof data.tags === 'string' 
+        ? data.tags.split(',').map(tag => tag.trim()) 
+        : Array.isArray(data.tags) ? data.tags : []
     };
     
     onSubmit(formattedData);
