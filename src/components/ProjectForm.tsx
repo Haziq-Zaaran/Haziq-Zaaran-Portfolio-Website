@@ -50,9 +50,10 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ onSubmit }) => {
     // Ensure tags is always an array before submitting
     const formattedData = {
       ...data,
+      // Fix the type issue by properly checking the type before calling split
       tags: typeof data.tags === 'string' 
         ? data.tags.split(',').map(tag => tag.trim()) 
-        : Array.isArray(data.tags) ? data.tags : []
+        : (Array.isArray(data.tags) ? data.tags : [])
     };
     
     onSubmit(formattedData);
