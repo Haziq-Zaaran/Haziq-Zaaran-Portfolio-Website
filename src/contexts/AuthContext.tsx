@@ -2,8 +2,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 // Define admin credentials
-const ADMIN_USERNAME = "admin";
-const ADMIN_PASSWORD = "password123"; // In a real app, this would be securely hashed and stored on a server
+const ADMIN_USERNAME = "Haziq Zaaran";
+const ADMIN_PASSWORD = "Notsowatermeloon5#"; // In a real app, this would be securely hashed and stored on a server
 
 interface AuthContextType {
   isAuthenticated: boolean;
