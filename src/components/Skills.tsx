@@ -1,6 +1,6 @@
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Database, LineChart, Code, Server, Activity, Layers, Python, FileCode, Table, BarChart4, Cpu, GitBranch, Terminal } from 'lucide-react';
+import { Database, LineChart, Code, Server, Activity, Layers, FileCode, Table, BarChart4, Cpu, GitBranch, Terminal, FileType } from 'lucide-react';
 import AnimatedSection from './AnimatedSection';
 
 interface Skill {
@@ -22,7 +22,7 @@ const skillsData: Skill[] = [
   { name: "Data Storytelling", level: 90, icon: LineChart, category: "Data Visualization" },
   
   // Programming
-  { name: "Python", level: 80, icon: Python, category: "Programming" },
+  { name: "Python", level: 80, icon: FileType, category: "Programming" },
   { name: "R", level: 75, icon: Code, category: "Programming" },
   { name: "JavaScript", level: 65, icon: FileCode, category: "Programming" },
   
