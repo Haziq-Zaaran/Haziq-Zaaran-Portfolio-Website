@@ -6,7 +6,16 @@ import { usePortfolio } from '@/contexts/PortfolioContext';
 
 const Hero: React.FC = () => {
   const { portfolioData } = usePortfolio();
-  const { hero } = portfolioData;
+  
+  // Default values if hero data is not available
+  const defaultHero = {
+    subtitle: "Data Analyst Portfolio",
+    title: "Turning Data into Actionable Insights",
+    description: "Loading portfolio content..."
+  };
+  
+  // Use a nullish coalescing operator to handle potentially undefined values
+  const hero = portfolioData?.hero || defaultHero;
   
   const scrollToProjects = () => {
     const projectsSection = document.getElementById('projects');
@@ -18,6 +27,17 @@ const Hero: React.FC = () => {
     }
   };
 
+  // Safely split and map the title
+  const renderTitle = () => {
+    if (!hero.title) return <span>Welcome to my Portfolio</span>;
+    
+    return hero.title.split(' ').map((word, index) => {
+      if (index === 1) return <span key={index} className="text-portfolio-purple"> {word}</span>;
+      if (index === 3) return <span key={index} className="text-portfolio-gold"> {word}</span>;
+      return <span key={index}> {word}</span>;
+    });
+  };
+
   return (
     <section id="home" className="relative min-h-screen flex items-center overflow-hidden pt-16">
       {/* Background decoration elements */}
@@ -27,17 +47,13 @@ const Hero: React.FC = () => {
       <div className="section-container grid md:grid-cols-2 gap-10 items-center">
         <AnimatedSection animation="fade-in-left" className="flex flex-col justify-center">
           <div className="inline-block mb-2 px-3 py-1 bg-portfolio-purple/10 text-portfolio-purple rounded-full text-sm font-medium">
-            {hero.subtitle}
+            {hero?.subtitle || defaultHero.subtitle}
           </div>
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 leading-tight">
-            {hero.title.split(' ').map((word, index) => {
-              if (index === 1) return <span key={index} className="text-portfolio-purple"> {word}</span>;
-              if (index === 3) return <span key={index} className="text-portfolio-gold"> {word}</span>;
-              return <span key={index}> {word}</span>;
-            })}
+            {renderTitle()}
           </h1>
           <p className="text-lg text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
-            {hero.description}
+            {hero?.description || defaultHero.description}
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
             <button 

@@ -9,41 +9,10 @@ import Resume from '@/components/Resume';
 import Contact from '@/components/Contact';
 import Footer from '@/components/Footer';
 import Messages from '@/components/Messages';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
-// Lazy load the Hero component which is causing issues
+// Lazy load the Hero component
 const Hero = React.lazy(() => import('@/components/Hero'));
-
-// Error boundary props interface
-interface ErrorBoundaryProps {
-  children: React.ReactNode;
-  fallback: React.ReactNode;
-}
-
-// Error boundary state interface
-interface ErrorBoundaryState {
-  hasError: boolean;
-}
-
-// Simple error boundary implementation
-class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
-  state: ErrorBoundaryState = { hasError: false };
-  
-  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
-    return { hasError: true };
-  }
-  
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
-    console.error("Error in component:", error, errorInfo);
-  }
-  
-  render(): React.ReactNode {
-    if (this.state.hasError) {
-      return this.props.fallback;
-    }
-    
-    return this.props.children;
-  }
-}
 
 const Index: React.FC = () => {
   useEffect(() => {
@@ -72,19 +41,39 @@ const Index: React.FC = () => {
     <div className="min-h-screen bg-background text-foreground">
       <Navbar />
       <main>
-        <Suspense fallback={<div className="h-screen flex items-center justify-center">Loading hero section...</div>}>
-          {/* Wrap the Hero component in an error boundary */}
-          <ErrorBoundary fallback={<div className="section-container text-center">Could not load hero section. Please check the hero content in admin panel.</div>}>
+        <ErrorBoundary componentName="Hero Section">
+          <Suspense fallback={<div className="h-screen flex items-center justify-center">Loading hero section...</div>}>
             <Hero />
-          </ErrorBoundary>
-        </Suspense>
-        <About />
-        <Messages />
-        <Projects />
-        <Dashboard />
-        <Skills />
-        <Resume />
-        <Contact />
+          </Suspense>
+        </ErrorBoundary>
+        
+        <ErrorBoundary componentName="About Section">
+          <About />
+        </ErrorBoundary>
+        
+        <ErrorBoundary componentName="Messages Section">
+          <Messages />
+        </ErrorBoundary>
+        
+        <ErrorBoundary componentName="Projects Section">
+          <Projects />
+        </ErrorBoundary>
+        
+        <ErrorBoundary componentName="Dashboard Section">
+          <Dashboard />
+        </ErrorBoundary>
+        
+        <ErrorBoundary componentName="Skills Section">
+          <Skills />
+        </ErrorBoundary>
+        
+        <ErrorBoundary componentName="Resume Section">
+          <Resume />
+        </ErrorBoundary>
+        
+        <ErrorBoundary componentName="Contact Section">
+          <Contact />
+        </ErrorBoundary>
       </main>
       <Footer />
     </div>
