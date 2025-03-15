@@ -1,10 +1,7 @@
 
 import React from 'react';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Button } from '@/components/ui/button';
-import { Menu, User, LogOut, Settings, Home, Folders, BarChart4, Mail } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { Layout, FileText, User, BarChart2, Mail, Home } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface AdminHeaderProps {
   activeTab: string;
@@ -12,105 +9,36 @@ interface AdminHeaderProps {
 }
 
 const AdminHeader: React.FC<AdminHeaderProps> = ({ activeTab, setActiveTab }) => {
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
-
-  const handleLogout = () => {
-    logout();
-    navigate('/');
-  };
-
-  const navItems = [
-    { id: 'projects', label: 'Projects', icon: Folders },
-    { id: 'about', label: 'About', icon: User },
-    { id: 'dashboards', label: 'Dashboards', icon: BarChart4 },
-    { id: 'contact', label: 'Contact', icon: Mail },
+  const tabs = [
+    { id: 'hero', name: 'Hero', icon: Home },
+    { id: 'projects', name: 'Projects', icon: Layout },
+    { id: 'about', name: 'About', icon: User },
+    { id: 'dashboards', name: 'Dashboards', icon: BarChart2 },
+    { id: 'contact', name: 'Contact', icon: Mail },
   ];
-
+  
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur">
-      <div className="container flex h-16 items-center justify-between px-4">
-        <div className="flex items-center gap-2">
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button variant="outline" size="icon" className="md:hidden">
-                <Menu className="h-5 w-5" />
-                <span className="sr-only">Toggle menu</span>
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="w-[240px] sm:w-[280px]">
-              <div className="flex flex-col gap-6 mt-8">
-                <div className="flex items-center gap-2">
-                  <User className="h-5 w-5" />
-                  <span className="font-medium">{user?.username}</span>
-                </div>
-                <nav className="flex flex-col gap-2">
-                  {navItems.map((item) => (
-                    <Button
-                      key={item.id}
-                      variant={activeTab === item.id ? "default" : "ghost"}
-                      className="justify-start"
-                      onClick={() => {
-                        setActiveTab(item.id);
-                      }}
-                    >
-                      <item.icon className="mr-2 h-5 w-5" />
-                      {item.label}
-                    </Button>
-                  ))}
-                  <Button
-                    variant="ghost"
-                    className="justify-start"
-                    onClick={() => navigate('/')}
-                  >
-                    <Home className="mr-2 h-5 w-5" />
-                    View Site
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    className="justify-start text-destructive"
-                    onClick={handleLogout}
-                  >
-                    <LogOut className="mr-2 h-5 w-5" />
-                    Logout
-                  </Button>
-                </nav>
-              </div>
-            </SheetContent>
-          </Sheet>
-          <div className="hidden md:flex">
-            <div className="font-bold text-xl">Portfolio Admin</div>
-          </div>
-        </div>
-        <nav className="hidden md:flex items-center gap-6">
-          {navItems.map((item) => (
-            <Button
-              key={item.id}
-              variant={activeTab === item.id ? "default" : "ghost"}
-              className="gap-1"
-              onClick={() => setActiveTab(item.id)}
+    <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 sticky top-0 z-50">
+      <div className="container mx-auto">
+        <div className="flex overflow-x-auto hide-scrollbar py-2">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              className={cn(
+                "flex items-center px-4 py-2 min-w-[120px] rounded-md text-sm font-medium whitespace-nowrap mr-2",
+                activeTab === tab.id
+                  ? "bg-portfolio-purple/10 text-portfolio-purple"
+                  : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+              )}
+              onClick={() => setActiveTab(tab.id)}
             >
-              <item.icon className="h-4 w-4 mr-1" />
-              {item.label}
-            </Button>
+              <tab.icon size={16} className="mr-2" />
+              {tab.name}
+            </button>
           ))}
-        </nav>
-        <div className="flex items-center gap-2">
-          <div className="hidden md:flex items-center text-sm font-medium">
-            <User className="h-4 w-4 mr-1" />
-            {user?.username}
-          </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label="Settings"
-            className="hidden md:flex"
-          >
-            <Settings className="h-5 w-5" />
-          </Button>
         </div>
       </div>
-    </header>
+    </div>
   );
 };
 

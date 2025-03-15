@@ -27,8 +27,18 @@ const Contact: React.FC = () => {
     e.preventDefault();
     setIsSubmitting(true);
     
-    // Simulate form submission
+    // In a real implementation, you would send this data to a server or email service
+    // For now, we'll just simulate the process
     setTimeout(() => {
+      console.log(`
+        Message details:
+        From: ${formData.name} (${formData.email})
+        Subject: ${formData.subject}
+        Message: ${formData.message}
+        
+        This would be sent to: ${contactInfo.email}
+      `);
+      
       setIsSubmitting(false);
       setFormData({
         name: '',
@@ -39,7 +49,7 @@ const Contact: React.FC = () => {
       
       toast({
         title: "Message sent!",
-        description: "Thank you for your message. I'll get back to you soon.",
+        description: `Thank you for your message. I'll get back to you soon at ${formData.email}.`,
         duration: 5000,
       });
     }, 1500);

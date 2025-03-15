@@ -10,11 +10,12 @@ import ProjectsAdmin from '@/components/admin/ProjectsAdmin';
 import AboutAdmin from '@/components/admin/AboutAdmin';
 import DashboardsAdmin from '@/components/admin/DashboardsAdmin';
 import ContactAdmin from '@/components/admin/ContactAdmin';
+import HeroAdmin from '@/components/admin/HeroAdmin';
 
 const Admin: React.FC = () => {
   const { logout } = useAuth();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('projects');
+  const [activeTab, setActiveTab] = useState('hero');
 
   const handleLogout = () => {
     logout();
@@ -41,12 +42,17 @@ const Admin: React.FC = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid grid-cols-4 w-full max-w-2xl">
+          <TabsList className="grid grid-cols-5 w-full max-w-3xl">
+            <TabsTrigger value="hero">Hero</TabsTrigger>
             <TabsTrigger value="projects">Projects</TabsTrigger>
             <TabsTrigger value="about">About</TabsTrigger>
             <TabsTrigger value="dashboards">Dashboards</TabsTrigger>
             <TabsTrigger value="contact">Contact</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="hero" className="space-y-6">
+            <HeroAdmin />
+          </TabsContent>
 
           <TabsContent value="projects" className="space-y-6">
             <ProjectsAdmin />

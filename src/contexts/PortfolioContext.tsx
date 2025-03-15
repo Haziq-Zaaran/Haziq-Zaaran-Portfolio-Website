@@ -42,11 +42,18 @@ export interface ContactInfo {
   githubUrl: string;
 }
 
+export interface HeroData {
+  title: string;
+  subtitle: string;
+  description: string;
+}
+
 export interface PortfolioData {
   about: AboutData;
   projects: Project[];
   dashboards: Dashboard[];
   contactInfo: ContactInfo;
+  hero: HeroData;
 }
 
 interface PortfolioContextType {
@@ -62,6 +69,7 @@ interface PortfolioContextType {
   showDashboard: (id: number) => void;
   deleteDashboard: (id: number) => void;
   updateContactInfo: (data: Partial<ContactInfo>) => void;
+  updateHero: (data: Partial<HeroData>) => void;
 }
 
 // Initial data (this would normally come from a database)
@@ -154,11 +162,16 @@ const initialPortfolioData: PortfolioData = {
     }
   ],
   contactInfo: {
-    email: "your.email@example.com",
+    email: "haziqzaaran@gmail.com",
     phone: "+1 (123) 456-7890",
     location: "City, State, Country",
     linkedinUrl: "https://linkedin.com/in/yourusername",
     githubUrl: "https://github.com/yourusername"
+  },
+  hero: {
+    title: "Turning Data into Actionable Insights",
+    subtitle: "Data Analyst Portfolio",
+    description: "I transform complex data into clear, compelling stories that drive strategic decisions. Explore my portfolio to see how I leverage data analysis to solve real-world problems."
   }
 };
 
@@ -167,15 +180,24 @@ const PortfolioContext = createContext<PortfolioContextType | undefined>(undefin
 export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // Load data from localStorage or use initial data
   const loadInitialData = (): PortfolioData => {
-    const savedData = localStorage.getItem('portfolioData');
-    return savedData ? JSON.parse(savedData) : initialPortfolioData;
+    try {
+      const savedData = localStorage.getItem('portfolioData');
+      return savedData ? JSON.parse(savedData) : initialPortfolioData;
+    } catch (error) {
+      console.error('Error loading data from localStorage:', error);
+      return initialPortfolioData;
+    }
   };
 
   const [portfolioData, setPortfolioData] = useState<PortfolioData>(loadInitialData);
 
   // Save data to localStorage whenever it changes
   useEffect(() => {
-    localStorage.setItem('portfolioData', JSON.stringify(portfolioData));
+    try {
+      localStorage.setItem('portfolioData', JSON.stringify(portfolioData));
+    } catch (error) {
+      console.error('Error saving data to localStorage:', error);
+    }
   }, [portfolioData]);
 
   // About section methods
@@ -275,6 +297,14 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }));
   };
 
+  // Hero section methods
+  const updateHero = (data: Partial<HeroData>) => {
+    setPortfolioData(prev => ({
+      ...prev,
+      hero: { ...prev.hero, ...data }
+    }));
+  };
+
   return (
     <PortfolioContext.Provider 
       value={{ 
@@ -289,7 +319,8 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         hideDashboard,
         showDashboard,
         deleteDashboard,
-        updateContactInfo
+        updateContactInfo,
+        updateHero
       }}
     >
       {children}

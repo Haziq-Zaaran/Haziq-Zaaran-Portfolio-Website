@@ -2,8 +2,12 @@
 import React from 'react';
 import { ArrowDownCircle, Database, LineChart, BarChart4 } from 'lucide-react';
 import AnimatedSection from './AnimatedSection';
+import { usePortfolio } from '@/contexts/PortfolioContext';
 
 const Hero: React.FC = () => {
+  const { portfolioData } = usePortfolio();
+  const { hero } = portfolioData;
+  
   const scrollToProjects = () => {
     const projectsSection = document.getElementById('projects');
     if (projectsSection) {
@@ -23,15 +27,17 @@ const Hero: React.FC = () => {
       <div className="section-container grid md:grid-cols-2 gap-10 items-center">
         <AnimatedSection animation="fade-in-left" className="flex flex-col justify-center">
           <div className="inline-block mb-2 px-3 py-1 bg-portfolio-purple/10 text-portfolio-purple rounded-full text-sm font-medium">
-            Data Analyst Portfolio
+            {hero.subtitle}
           </div>
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 leading-tight">
-            Turning <span className="text-portfolio-purple">Data</span> into 
-            <span className="text-portfolio-gold"> Actionable Insights</span>
+            {hero.title.split(' ').map((word, index) => {
+              if (index === 1) return <span key={index} className="text-portfolio-purple"> {word}</span>;
+              if (index === 3) return <span key={index} className="text-portfolio-gold"> {word}</span>;
+              return <span key={index}> {word}</span>;
+            })}
           </h1>
           <p className="text-lg text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
-            I transform complex data into clear, compelling stories that drive strategic decisions. 
-            Explore my portfolio to see how I leverage data analysis to solve real-world problems.
+            {hero.description}
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
             <button 

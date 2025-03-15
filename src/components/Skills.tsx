@@ -1,6 +1,6 @@
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Database, LineChart, Code, Server, Activity, Layers } from 'lucide-react';
+import { Database, LineChart, Code, Server, Activity, Layers, Python, FileCode, Table, BarChart4, Cpu, GitBranch, Terminal } from 'lucide-react';
 import AnimatedSection from './AnimatedSection';
 
 interface Skill {
@@ -13,27 +13,28 @@ interface Skill {
 const skillsData: Skill[] = [
   // Data Analysis
   { name: "SQL", level: 90, icon: Database, category: "Data Analysis" },
-  { name: "Excel", level: 95, icon: Activity, category: "Data Analysis" },
+  { name: "Excel", level: 95, icon: Table, category: "Data Analysis" },
   { name: "Statistical Analysis", level: 85, icon: Activity, category: "Data Analysis" },
   
   // Data Visualization
-  { name: "Tableau", level: 88, icon: LineChart, category: "Data Visualization" },
+  { name: "Tableau", level: 88, icon: BarChart4, category: "Data Visualization" },
   { name: "Power BI", level: 82, icon: LineChart, category: "Data Visualization" },
   { name: "Data Storytelling", level: 90, icon: LineChart, category: "Data Visualization" },
   
   // Programming
-  { name: "Python", level: 80, icon: Code, category: "Programming" },
+  { name: "Python", level: 80, icon: Python, category: "Programming" },
   { name: "R", level: 75, icon: Code, category: "Programming" },
-  { name: "JavaScript", level: 65, icon: Code, category: "Programming" },
+  { name: "JavaScript", level: 65, icon: FileCode, category: "Programming" },
   
   // Big Data
   { name: "Hadoop", level: 60, icon: Server, category: "Big Data" },
-  { name: "Spark", level: 55, icon: Server, category: "Big Data" },
+  { name: "Spark", level: 55, icon: Cpu, category: "Big Data" },
   
   // Tools & Frameworks
   { name: "Pandas", level: 85, icon: Layers, category: "Tools & Frameworks" },
   { name: "Scikit-learn", level: 75, icon: Layers, category: "Tools & Frameworks" },
-  { name: "Git", level: 80, icon: Layers, category: "Tools & Frameworks" },
+  { name: "Git", level: 80, icon: GitBranch, category: "Tools & Frameworks" },
+  { name: "Terminal", level: 85, icon: Terminal, category: "Tools & Frameworks" },
 ];
 
 const categories = Array.from(new Set(skillsData.map(skill => skill.category)));
