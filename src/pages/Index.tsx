@@ -13,6 +13,38 @@ import Messages from '@/components/Messages';
 // Lazy load the Hero component which is causing issues
 const Hero = React.lazy(() => import('@/components/Hero'));
 
+// Error boundary props interface
+interface ErrorBoundaryProps {
+  children: React.ReactNode;
+  fallback: React.ReactNode;
+}
+
+// Error boundary state interface
+interface ErrorBoundaryState {
+  hasError: boolean;
+}
+
+// Simple error boundary implementation
+class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  state: ErrorBoundaryState = { hasError: false };
+  
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    return { hasError: true };
+  }
+  
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
+    console.error("Error in component:", error, errorInfo);
+  }
+  
+  render(): React.ReactNode {
+    if (this.state.hasError) {
+      return this.props.fallback;
+    }
+    
+    return this.props.children;
+  }
+}
+
 const Index: React.FC = () => {
   useEffect(() => {
     // Initialize intersection observer for reveal animations
@@ -58,26 +90,5 @@ const Index: React.FC = () => {
     </div>
   );
 };
-
-// Simple error boundary implementation
-class ErrorBoundary extends React.Component {
-  state = { hasError: false };
-  
-  static getDerivedStateFromError(error) {
-    return { hasError: true };
-  }
-  
-  componentDidCatch(error, errorInfo) {
-    console.error("Error in component:", error, errorInfo);
-  }
-  
-  render() {
-    if (this.state.hasError) {
-      return this.props.fallback;
-    }
-    
-    return this.props.children;
-  }
-}
 
 export default Index;
