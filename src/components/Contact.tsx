@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Mail, Phone, MapPin, Send, Linkedin, Github } from 'lucide-react';
 import AnimatedSection from './AnimatedSection';
@@ -23,13 +22,29 @@ const Contact: React.FC = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     
-    // In a real implementation, you would send this data to a server or email service
-    // For now, we'll just simulate the process
-    setTimeout(() => {
+    try {
+      // For now, we'll simulate saving the message
+      // When Supabase is integrated, uncomment and use this code:
+      /*
+      const { data, error } = await supabase
+        .from('messages')
+        .insert([
+          { 
+            name: formData.name,
+            email: formData.email,
+            subject: formData.subject,
+            message: formData.message
+          }
+        ]);
+      
+      if (error) throw error;
+      */
+
+      // Log the message details for now
       console.log(`
         Message details:
         From: ${formData.name} (${formData.email})
@@ -39,7 +54,7 @@ const Contact: React.FC = () => {
         This would be sent to: ${contactInfo.email}
       `);
       
-      setIsSubmitting(false);
+      // Reset form and show success message
       setFormData({
         name: '',
         email: '',
@@ -52,7 +67,17 @@ const Contact: React.FC = () => {
         description: `Thank you for your message. I'll get back to you soon at ${formData.email}.`,
         duration: 5000,
       });
-    }, 1500);
+    } catch (error) {
+      console.error('Error saving message:', error);
+      toast({
+        title: "Error sending message",
+        description: "There was a problem sending your message. Please try again.",
+        variant: "destructive",
+        duration: 5000,
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
