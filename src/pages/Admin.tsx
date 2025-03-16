@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -11,16 +11,33 @@ import AboutAdmin from '@/components/admin/AboutAdmin';
 import DashboardsAdmin from '@/components/admin/DashboardsAdmin';
 import ContactAdmin from '@/components/admin/ContactAdmin';
 import HeroAdmin from '@/components/admin/HeroAdmin';
+import ErrorBoundary from '@/components/ErrorBoundary';
+import { usePortfolio } from '@/contexts/PortfolioContext';
 
 const Admin: React.FC = () => {
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('hero');
+  const portfolioContext = usePortfolio();
 
   const handleLogout = () => {
     logout();
     navigate('/');
   };
+
+  // Handle potential portfolio data loading
+  const isLoading = !portfolioContext || !portfolioContext.portfolio;
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900/50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-portfolio-purple mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-300">Loading admin dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900/50">
@@ -50,25 +67,45 @@ const Admin: React.FC = () => {
             <TabsTrigger value="contact">Contact</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="hero" className="space-y-6">
-            <HeroAdmin />
-          </TabsContent>
+          <ErrorBoundary componentName="Hero Admin Section">
+            <TabsContent value="hero" className="space-y-6">
+              <Suspense fallback={<div>Loading Hero settings...</div>}>
+                <HeroAdmin />
+              </Suspense>
+            </TabsContent>
+          </ErrorBoundary>
 
-          <TabsContent value="projects" className="space-y-6">
-            <ProjectsAdmin />
-          </TabsContent>
+          <ErrorBoundary componentName="Projects Admin Section">
+            <TabsContent value="projects" className="space-y-6">
+              <Suspense fallback={<div>Loading Projects settings...</div>}>
+                <ProjectsAdmin />
+              </Suspense>
+            </TabsContent>
+          </ErrorBoundary>
 
-          <TabsContent value="about" className="space-y-6">
-            <AboutAdmin />
-          </TabsContent>
+          <ErrorBoundary componentName="About Admin Section">
+            <TabsContent value="about" className="space-y-6">
+              <Suspense fallback={<div>Loading About settings...</div>}>
+                <AboutAdmin />
+              </Suspense>
+            </TabsContent>
+          </ErrorBoundary>
 
-          <TabsContent value="dashboards" className="space-y-6">
-            <DashboardsAdmin />
-          </TabsContent>
+          <ErrorBoundary componentName="Dashboards Admin Section">
+            <TabsContent value="dashboards" className="space-y-6">
+              <Suspense fallback={<div>Loading Dashboards settings...</div>}>
+                <DashboardsAdmin />
+              </Suspense>
+            </TabsContent>
+          </ErrorBoundary>
 
-          <TabsContent value="contact" className="space-y-6">
-            <ContactAdmin />
-          </TabsContent>
+          <ErrorBoundary componentName="Contact Admin Section">
+            <TabsContent value="contact" className="space-y-6">
+              <Suspense fallback={<div>Loading Contact settings...</div>}>
+                <ContactAdmin />
+              </Suspense>
+            </TabsContent>
+          </ErrorBoundary>
         </Tabs>
       </main>
     </div>

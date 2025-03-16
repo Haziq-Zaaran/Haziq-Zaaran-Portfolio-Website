@@ -5,6 +5,7 @@ import AnimatedSection from './AnimatedSection';
 import { Mail, Clock, User, Shield, AlertTriangle } from 'lucide-react';
 import ErrorBoundary from './ErrorBoundary';
 import { toast } from '@/components/ui/use-toast';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 // Temporary interface for messages until Supabase is integrated
 interface Message {
@@ -17,8 +18,76 @@ interface Message {
   read?: boolean;
 }
 
+// Message item component to reduce complexity
+const MessageItem: React.FC<{ message: Message }> = ({ message }) => (
+  <AnimatedSection className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 border border-gray-100 dark:border-gray-700">
+    <div className="flex justify-between items-start">
+      <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 flex items-center">
+        {message.subject}
+        {!message.read && (
+          <span className="ml-2 inline-block w-2 h-2 bg-blue-500 rounded-full" title="Unread message"></span>
+        )}
+      </h3>
+      <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+        <Clock size={16} className="mr-1" />
+        {new Date(message.created_at).toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        })}
+      </div>
+    </div>
+    
+    <div className="flex items-center mt-3 text-gray-600 dark:text-gray-300">
+      <User size={16} className="mr-1" />
+      <span className="font-medium">{message.name}</span>
+      <span className="mx-2">•</span>
+      <a href={`mailto:${message.email}`} className="text-portfolio-purple hover:underline">
+        {message.email}
+      </a>
+    </div>
+    
+    <div className="mt-4 bg-gray-50 dark:bg-gray-700 p-4 rounded-lg text-gray-700 dark:text-gray-200">
+      {message.message}
+    </div>
+  </AnimatedSection>
+);
+
+// Loading state component
+const MessageLoading = () => (
+  <div className="flex justify-center items-center h-40">
+    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-portfolio-purple"></div>
+  </div>
+);
+
+// Error state component
+const MessageError: React.FC<{ error: string; onRetry: () => void }> = ({ error, onRetry }) => (
+  <div className="text-center py-10 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+    <AlertTriangle className="mx-auto h-12 w-12 text-red-500" />
+    <h3 className="mt-2 text-lg font-medium text-gray-900 dark:text-gray-100">Error loading messages</h3>
+    <p className="mt-1 text-gray-500 dark:text-gray-400">{error}</p>
+    <button 
+      onClick={onRetry}
+      className="mt-4 px-4 py-2 bg-portfolio-purple text-white rounded-md hover:bg-portfolio-purple/90 transition-colors"
+    >
+      Try Again
+    </button>
+  </div>
+);
+
+// Empty state component
+const NoMessages = () => (
+  <div className="text-center py-10 bg-gray-50 dark:bg-gray-800 rounded-lg">
+    <Mail className="mx-auto h-12 w-12 text-gray-400" />
+    <h3 className="mt-2 text-lg font-medium text-gray-900 dark:text-gray-100">No messages yet</h3>
+    <p className="mt-1 text-gray-500 dark:text-gray-400">You haven't received any messages from visitors.</p>
+  </div>
+);
+
 const Messages: React.FC = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -77,27 +146,6 @@ const Messages: React.FC = () => {
       } finally {
         setIsLoading(false);
       }
-
-      // When Supabase is integrated, replace with:
-      // const fetchMessages = async () => {
-      //   setIsLoading(true);
-      //   try {
-      //     const { data, error } = await supabase
-      //       .from('messages')
-      //       .select('*')
-      //       .order('created_at', { ascending: false });
-      //     
-      //     if (error) throw new Error(error.message);
-      //     if (data) {
-      //       setMessages(data);
-      //     }
-      //   } catch (err) {
-      //     console.error('Error fetching messages:', err);
-      //     setError('Failed to load messages');
-      //   } finally {
-      //     setIsLoading(false);
-      //   }
-      // };
     };
     
     fetchMessages();
@@ -131,64 +179,16 @@ const Messages: React.FC = () => {
 
         <ErrorBoundary componentName="Messages Section" onReset={handleResetError}>
           {isLoading ? (
-            <div className="flex justify-center items-center h-40">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-portfolio-purple"></div>
-            </div>
+            <MessageLoading />
           ) : error ? (
-            <div className="text-center py-10 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
-              <AlertTriangle className="mx-auto h-12 w-12 text-red-500" />
-              <h3 className="mt-2 text-lg font-medium text-gray-900 dark:text-gray-100">Error loading messages</h3>
-              <p className="mt-1 text-gray-500 dark:text-gray-400">{error}</p>
-              <button 
-                onClick={handleResetError}
-                className="mt-4 px-4 py-2 bg-portfolio-purple text-white rounded-md hover:bg-portfolio-purple/90 transition-colors"
-              >
-                Try Again
-              </button>
-            </div>
+            <MessageError error={error} onRetry={handleResetError} />
           ) : (
             <div className="grid gap-6">
               {messages.length === 0 ? (
-                <div className="text-center py-10 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                  <Mail className="mx-auto h-12 w-12 text-gray-400" />
-                  <h3 className="mt-2 text-lg font-medium text-gray-900 dark:text-gray-100">No messages yet</h3>
-                  <p className="mt-1 text-gray-500 dark:text-gray-400">You haven't received any messages from visitors.</p>
-                </div>
+                <NoMessages />
               ) : (
                 messages.map((message) => (
-                  <AnimatedSection key={message.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 border border-gray-100 dark:border-gray-700">
-                    <div className="flex justify-between items-start">
-                      <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 flex items-center">
-                        {message.subject}
-                        {!message.read && (
-                          <span className="ml-2 inline-block w-2 h-2 bg-blue-500 rounded-full" title="Unread message"></span>
-                        )}
-                      </h3>
-                      <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-                        <Clock size={16} className="mr-1" />
-                        {new Date(message.created_at).toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'short',
-                          day: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center mt-3 text-gray-600 dark:text-gray-300">
-                      <User size={16} className="mr-1" />
-                      <span className="font-medium">{message.name}</span>
-                      <span className="mx-2">•</span>
-                      <a href={`mailto:${message.email}`} className="text-portfolio-purple hover:underline">
-                        {message.email}
-                      </a>
-                    </div>
-                    
-                    <div className="mt-4 bg-gray-50 dark:bg-gray-700 p-4 rounded-lg text-gray-700 dark:text-gray-200">
-                      {message.message}
-                    </div>
-                  </AnimatedSection>
+                  <MessageItem key={message.id} message={message} />
                 ))
               )}
             </div>

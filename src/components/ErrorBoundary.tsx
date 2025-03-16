@@ -24,6 +24,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
   };
   
   static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    // Update state so the next render will show the fallback UI
     return { 
       hasError: true,
       error 
@@ -71,9 +72,11 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
               ? `There was an error loading the ${this.props.componentName}.` 
               : 'There was an error loading this content.'}
           </p>
-          <p className="text-xs text-gray-400 dark:text-gray-500 mb-4">
-            {this.state.error?.message || "Unknown error occurred"}
-          </p>
+          {this.state.error && (
+            <p className="text-xs text-gray-400 dark:text-gray-500 mb-4">
+              Error: {this.state.error.message || "Unknown error occurred"}
+            </p>
+          )}
           <Button 
             onClick={this.resetErrorBoundary}
             variant="outline"

@@ -40,13 +40,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       try {
         const storedUser = localStorage.getItem('portfolioUser');
         if (storedUser) {
-          const parsedUser = JSON.parse(storedUser);
-          // Add validation here to ensure the user object has expected properties
-          if (parsedUser && parsedUser.username) {
-            setUser(parsedUser);
-            setIsAuthenticated(true);
-          } else {
-            // Invalid stored user data
+          try {
+            const parsedUser = JSON.parse(storedUser);
+            // Add validation here to ensure the user object has expected properties
+            if (parsedUser && parsedUser.username) {
+              console.log("Restored authentication from localStorage");
+              setUser(parsedUser);
+              setIsAuthenticated(true);
+            } else {
+              // Invalid stored user data
+              console.warn("Invalid user data in localStorage, clearing");
+              localStorage.removeItem('portfolioUser');
+            }
+          } catch (parseError) {
+            console.error("Error parsing user data from localStorage:", parseError);
             localStorage.removeItem('portfolioUser');
           }
         }
@@ -67,6 +74,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true);
     
     try {
+      console.log("Login attempt for user:", username);
+      
       // In a real app, this would make an API call to a secure backend
       // Simulate network delay
       await new Promise(resolve => setTimeout(resolve, 500));
@@ -78,11 +87,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           lastLogin: new Date()
         };
         
+        console.log("Login successful for user:", username);
         setUser(userData);
         setIsAuthenticated(true);
         localStorage.setItem('portfolioUser', JSON.stringify(userData));
         return true;
       }
+      
+      console.log("Login failed: Invalid credentials");
       return false;
     } catch (error) {
       console.error('Login error:', error);
@@ -93,6 +105,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = () => {
+    console.log("Logging out user");
     setUser(null);
     setIsAuthenticated(false);
     localStorage.removeItem('portfolioUser');
