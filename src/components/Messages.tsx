@@ -20,6 +20,9 @@ const Messages: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    // Only fetch messages if user is authenticated
+    if (!isAuthenticated) return;
+    
     // Mock data for now - will be replaced with Supabase fetch
     const mockMessages = [
       {
@@ -71,10 +74,11 @@ const Messages: React.FC = () => {
     // };
     // 
     // fetchMessages();
-  }, []);
+  }, [isAuthenticated]);
 
+  // Don't render this section at all for non-authenticated users
   if (!isAuthenticated) {
-    return null; // Don't render this section for non-admins
+    return null;
   }
 
   return (

@@ -10,12 +10,15 @@ interface ErrorBoundaryProps {
 
 interface ErrorBoundaryState {
   hasError: boolean;
-  error?: Error;
+  error?: Error | null;
+  errorInfo?: React.ErrorInfo | null;
 }
 
 class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
   state: ErrorBoundaryState = { 
-    hasError: false 
+    hasError: false,
+    error: null,
+    errorInfo: null
   };
   
   static getDerivedStateFromError(error: Error): ErrorBoundaryState {
@@ -29,6 +32,10 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
     const componentName = this.props.componentName || 'component';
     console.error(`Error in ${componentName}:`, error);
     console.error("Component stack:", errorInfo.componentStack);
+    
+    this.setState({
+      errorInfo
+    });
   }
   
   render(): React.ReactNode {
