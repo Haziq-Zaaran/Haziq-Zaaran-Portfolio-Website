@@ -1,11 +1,13 @@
 
 import React from 'react';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface ErrorBoundaryProps {
   children: React.ReactNode;
   fallback?: React.ReactNode;
   componentName?: string;
+  onReset?: () => void;
 }
 
 interface ErrorBoundaryState {
@@ -36,7 +38,21 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
     this.setState({
       errorInfo
     });
+
+    // Here you could add error logging to a service like Sentry
+    // Sentry.captureException(error);
   }
+
+  resetErrorBoundary = () => {
+    if (this.props.onReset) {
+      this.props.onReset();
+    }
+    this.setState({ 
+      hasError: false,
+      error: null,
+      errorInfo: null
+    });
+  };
   
   render(): React.ReactNode {
     if (this.state.hasError) {
@@ -55,9 +71,18 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
               ? `There was an error loading the ${this.props.componentName}.` 
               : 'There was an error loading this content.'}
           </p>
-          <p className="text-xs text-gray-400 dark:text-gray-500">
-            {this.state.error?.message}
+          <p className="text-xs text-gray-400 dark:text-gray-500 mb-4">
+            {this.state.error?.message || "Unknown error occurred"}
           </p>
+          <Button 
+            onClick={this.resetErrorBoundary}
+            variant="outline"
+            size="sm"
+            className="mx-auto flex items-center gap-2"
+          >
+            <RefreshCw className="h-4 w-4" />
+            Try again
+          </Button>
         </div>
       );
     }
