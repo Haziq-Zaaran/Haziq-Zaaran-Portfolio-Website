@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import AnimatedSection from './AnimatedSection';
-import { Mail, Clock, User, Shield } from 'lucide-react';
+import { Mail, Clock, User, Shield, AlertTriangle } from 'lucide-react';
 import ErrorBoundary from './ErrorBoundary';
 import { toast } from '@/components/ui/use-toast';
 
