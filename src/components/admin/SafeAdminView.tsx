@@ -13,7 +13,7 @@ const SafeAdminView: React.FC<SafeAdminViewProps> = ({ children, fallback }) => 
   const portfolioContext = usePortfolio();
   
   // Check if data is available
-  if (!portfolioContext || !portfolioContext.portfolio) {
+  if (!portfolioContext || !portfolioContext.portfolioData) {
     return fallback || (
       <Alert variant="destructive" className="my-4">
         <AlertTriangle className="h-4 w-4" />
@@ -25,7 +25,7 @@ const SafeAdminView: React.FC<SafeAdminViewProps> = ({ children, fallback }) => 
     );
   }
   
-  return <>{children(portfolioContext.portfolio)}</>;
+  return <>{children(portfolioContext.portfolioData)}</>;
 };
 
 export default SafeAdminView;

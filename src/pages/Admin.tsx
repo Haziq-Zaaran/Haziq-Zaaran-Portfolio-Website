@@ -26,7 +26,7 @@ const Admin: React.FC = () => {
   };
 
   // Handle potential portfolio data loading
-  const isLoading = !portfolioContext || !portfolioContext.portfolio;
+  const isLoading = !portfolioContext || !portfolioContext.portfolioData;
 
   if (isLoading) {
     return (
