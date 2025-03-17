@@ -1,13 +1,15 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { usePortfolio } from '@/contexts/PortfolioContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
+import { Slider } from '@/components/ui/slider';
+import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { useToast } from '@/hooks/use-toast';
-import { Save, Plus, Trash2, ChevronUp, ChevronDown } from 'lucide-react';
+import { Save, Plus, Trash2, ChevronUp, ChevronDown, RefreshCw, MoveHorizontal, MoveVertical, Square } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import SafeAdminView from './SafeAdminView';
 
@@ -15,6 +17,13 @@ const AboutAdmin: React.FC = () => {
   const { portfolioData, updateAbout } = usePortfolio();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('basic');
+  
+  const defaultHeadshotSettings = {
+    url: portfolioData.about.headshot || '',
+    position: { x: 50, y: 50 },
+    aspectRatio: 1,
+    autoFit: true
+  };
   
   const [formData, setFormData] = useState({
     background: portfolioData.about.background,
@@ -25,13 +34,76 @@ const AboutAdmin: React.FC = () => {
     university: portfolioData.about.university,
     certifications: portfolioData.about.certifications,
     headshot: portfolioData.about.headshot,
+    headshotSettings: portfolioData.about.headshotSettings || defaultHeadshotSettings,
     journey: portfolioData.about.journey,
     sections: portfolioData.about.sections || []
   });
 
+  // Sync headshot URL with headshotSettings URL on initial load
+  useEffect(() => {
+    if (formData.headshot && !formData.headshotSettings.url) {
+      setFormData(prev => ({
+        ...prev,
+        headshotSettings: {
+          ...prev.headshotSettings,
+          url: prev.headshot
+        }
+      }));
+    }
+  }, []);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+
+    // If updating the headshot URL, also update it in the headshotSettings
+    if (name === 'headshot') {
+      setFormData(prev => ({
+        ...prev,
+        headshotSettings: {
+          ...prev.headshotSettings,
+          url: value
+        }
+      }));
+    }
+  };
+
+  const handleHeadshotSettingsChange = (field: string, value: any) => {
+    setFormData(prev => ({
+      ...prev,
+      headshotSettings: {
+        ...prev.headshotSettings,
+        [field]: value
+      }
+    }));
+  };
+
+  const handlePositionChange = (axis: 'x' | 'y', value: number[]) => {
+    setFormData(prev => ({
+      ...prev,
+      headshotSettings: {
+        ...prev.headshotSettings,
+        position: {
+          ...prev.headshotSettings.position,
+          [axis]: value[0]
+        }
+      }
+    }));
+  };
+
+  const resetHeadshotSettings = () => {
+    setFormData(prev => ({
+      ...prev,
+      headshotSettings: {
+        ...defaultHeadshotSettings,
+        url: prev.headshot || prev.headshotSettings.url
+      }
+    }));
+    
+    toast({
+      title: 'Headshot Settings Reset',
+      description: 'The headshot settings have been reset to default.',
+    });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -98,8 +170,9 @@ const AboutAdmin: React.FC = () => {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid grid-cols-2 w-full max-w-md">
+        <TabsList className="grid grid-cols-3 w-full max-w-md">
           <TabsTrigger value="basic">Basic Information</TabsTrigger>
+          <TabsTrigger value="headshot">Headshot Image</TabsTrigger>
           <TabsTrigger value="sections">Custom Sections</TabsTrigger>
         </TabsList>
 
@@ -188,36 +261,6 @@ const AboutAdmin: React.FC = () => {
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Professional Headshot</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="headshot">Headshot Image URL</Label>
-                  <Input
-                    id="headshot"
-                    name="headshot"
-                    value={formData.headshot}
-                    onChange={handleChange}
-                  />
-                </div>
-                <div className="aspect-square w-32 h-32 overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800 mx-auto">
-                  {formData.headshot ? (
-                    <img
-                      src={formData.headshot}
-                      alt="Professional Headshot"
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex items-center justify-center h-full text-gray-400">
-                      No image
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
                 <CardTitle className="text-lg">My Journey</CardTitle>
               </CardHeader>
               <CardContent>
@@ -239,6 +282,167 @@ const AboutAdmin: React.FC = () => {
               Save About Section
             </Button>
           </form>
+        </TabsContent>
+
+        <TabsContent value="headshot" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Headshot Image Settings</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="headshot-url">Image URL</Label>
+                    <Input
+                      id="headshot-url"
+                      name="headshot"
+                      value={formData.headshot}
+                      onChange={handleChange}
+                      placeholder="Enter image URL"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <Label htmlFor="horizontal-position" className="flex items-center gap-2">
+                        <MoveHorizontal size={16} />
+                        Horizontal Position
+                      </Label>
+                      <span className="text-sm text-gray-500">{formData.headshotSettings.position.x}%</span>
+                    </div>
+                    <Slider
+                      id="horizontal-position"
+                      value={[formData.headshotSettings.position.x]}
+                      min={0}
+                      max={100}
+                      step={1}
+                      onValueChange={(value) => handlePositionChange('x', value)}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <Label htmlFor="vertical-position" className="flex items-center gap-2">
+                        <MoveVertical size={16} />
+                        Vertical Position
+                      </Label>
+                      <span className="text-sm text-gray-500">{formData.headshotSettings.position.y}%</span>
+                    </div>
+                    <Slider
+                      id="vertical-position"
+                      value={[formData.headshotSettings.position.y]}
+                      min={0}
+                      max={100}
+                      step={1}
+                      onValueChange={(value) => handlePositionChange('y', value)}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <Label htmlFor="aspect-ratio" className="flex items-center gap-2">
+                        <Square size={16} />
+                        Aspect Ratio
+                      </Label>
+                      <span className="text-sm text-gray-500">
+                        {formData.headshotSettings.aspectRatio === 1 ? "1:1 (Square)" : 
+                         formData.headshotSettings.aspectRatio === 0.75 ? "4:3" : 
+                         formData.headshotSettings.aspectRatio === 0.5625 ? "16:9" : 
+                         `${formData.headshotSettings.aspectRatio.toFixed(2)}:1`}
+                      </span>
+                    </div>
+                    <Slider
+                      id="aspect-ratio"
+                      value={[formData.headshotSettings.aspectRatio * 100]}
+                      min={56.25}
+                      max={200}
+                      step={1}
+                      onValueChange={(value) => handleHeadshotSettingsChange('aspectRatio', value[0] / 100)}
+                    />
+                    <div className="flex gap-2 mt-1">
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleHeadshotSettingsChange('aspectRatio', 1)}
+                        className="text-xs py-1 h-7"
+                      >
+                        1:1
+                      </Button>
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleHeadshotSettingsChange('aspectRatio', 0.75)}
+                        className="text-xs py-1 h-7"
+                      >
+                        4:3
+                      </Button>
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleHeadshotSettingsChange('aspectRatio', 0.5625)}
+                        className="text-xs py-1 h-7"
+                      >
+                        16:9
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2 pt-2">
+                    <input
+                      type="checkbox"
+                      id="autofit"
+                      checked={formData.headshotSettings.autoFit}
+                      onChange={(e) => handleHeadshotSettingsChange('autoFit', e.target.checked)}
+                      className="rounded border-gray-300"
+                    />
+                    <Label htmlFor="autofit" className="cursor-pointer">Auto-fit image to container</Label>
+                  </div>
+                </div>
+                
+                <div className="space-y-4">
+                  <p className="text-sm text-gray-500">Preview:</p>
+                  <div className="rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                    <div style={{ aspectRatio: formData.headshotSettings.aspectRatio }}>
+                      {formData.headshotSettings.url ? (
+                        <img
+                          src={formData.headshotSettings.url}
+                          alt="Professional Headshot Preview"
+                          className="w-full h-full"
+                          style={{
+                            objectFit: formData.headshotSettings.autoFit ? 'cover' : 'contain',
+                            objectPosition: `${formData.headshotSettings.position.x}% ${formData.headshotSettings.position.y}%`
+                          }}
+                        />
+                      ) : (
+                        <div className="flex items-center justify-center w-full h-full text-gray-400">
+                          No image available
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={resetHeadshotSettings}
+                    className="w-full"
+                  >
+                    <RefreshCw size={16} className="mr-2" />
+                    Reset to Default Settings
+                  </Button>
+                </div>
+              </div>
+              
+              <Button onClick={handleSubmit} className="mt-4">
+                <Save size={16} className="mr-2" />
+                Save Headshot Settings
+              </Button>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="sections" className="space-y-6">

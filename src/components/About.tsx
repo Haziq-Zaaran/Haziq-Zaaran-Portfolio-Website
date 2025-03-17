@@ -1,12 +1,13 @@
 
 import React from 'react';
-import { Briefcase, GraduationCap, Award, Lightbulb, Quote, CheckCircle, List } from 'lucide-react';
+import { Briefcase, GraduationCap, Award, Lightbulb, Quote, CheckCircle } from 'lucide-react';
 import AnimatedSection from './AnimatedSection';
 import { usePortfolio } from '@/contexts/PortfolioContext';
 
 const About: React.FC = () => {
   const { portfolioData } = usePortfolio();
   const { about } = portfolioData;
+  const { headshotSettings } = about;
 
   // Function to render different section types
   const renderCustomSection = (section: any, index: number) => {
@@ -57,6 +58,24 @@ const About: React.FC = () => {
     }
   };
 
+  // Calculate image styles based on headshot settings
+  const getHeadshotStyles = () => {
+    if (!headshotSettings) {
+      return {
+        objectFit: 'cover' as const,
+        objectPosition: 'center',
+      };
+    }
+
+    return {
+      objectFit: headshotSettings.autoFit ? 'cover' as const : 'contain' as const,
+      objectPosition: `${headshotSettings.position.x}% ${headshotSettings.position.y}%`,
+      aspectRatio: headshotSettings.aspectRatio,
+    };
+  };
+
+  const imageStyles = getHeadshotStyles();
+
   return (
     <section id="about" className="py-20 bg-gray-50 dark:bg-gray-900/50">
       <div className="section-container">
@@ -70,8 +89,18 @@ const About: React.FC = () => {
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <AnimatedSection animation="fade-in-left">
             <div className="relative">
-              <div className="w-full h-[450px] rounded-2xl overflow-hidden bg-gray-200 dark:bg-gray-800 relative">
-                {about.headshot ? (
+              <div 
+                className="w-full h-[450px] rounded-2xl overflow-hidden bg-gray-200 dark:bg-gray-800 relative"
+                style={{ aspectRatio: headshotSettings?.aspectRatio ? `${headshotSettings.aspectRatio}` : '1' }}
+              >
+                {headshotSettings?.url ? (
+                  <img 
+                    src={headshotSettings.url} 
+                    alt="Professional headshot" 
+                    className="w-full h-full"
+                    style={imageStyles}
+                  />
+                ) : about.headshot ? (
                   <img 
                     src={about.headshot} 
                     alt="Professional headshot" 

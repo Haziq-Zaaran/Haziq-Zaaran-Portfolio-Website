@@ -19,6 +19,16 @@ export interface CustomSection {
   type: 'text' | 'quote' | 'highlight' | 'list';
 }
 
+export interface HeadshotSettings {
+  url: string;
+  position: {
+    x: number;
+    y: number;
+  };
+  aspectRatio: number; // 1 for square, 0.75 for 4:3, etc.
+  autoFit: boolean;
+}
+
 export interface AboutData {
   background: string;
   yearsOfExperience: string;
@@ -28,6 +38,7 @@ export interface AboutData {
   university: string;
   certifications: string;
   headshot: string;
+  headshotSettings?: HeadshotSettings;
   journey: string;
   sections?: CustomSection[];
 }
@@ -90,6 +101,12 @@ const initialPortfolioData: PortfolioData = {
     university: "State University",
     certifications: "Google Data Analytics, Microsoft Power BI, AWS Data Analytics Specialty",
     headshot: "https://images.unsplash.com/photo-1569913486515-b74bf7751574?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=900&q=80",
+    headshotSettings: {
+      url: "https://images.unsplash.com/photo-1569913486515-b74bf7751574?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=900&q=80",
+      position: { x: 50, y: 50 }, // Center position (percentage)
+      aspectRatio: 1, // Square by default
+      autoFit: true
+    },
     journey: "With a background in Statistics and Data Science, I've developed a passion for uncovering the stories hidden within data. My analytical approach combines technical expertise with creative problem-solving to deliver insights that drive business value.",
     sections: [
       {
@@ -356,3 +373,4 @@ export const usePortfolio = (): PortfolioContextType => {
   }
   return context;
 };
+
