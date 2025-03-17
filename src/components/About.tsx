@@ -1,12 +1,61 @@
 
 import React from 'react';
-import { Briefcase, GraduationCap, Award, Lightbulb } from 'lucide-react';
+import { Briefcase, GraduationCap, Award, Lightbulb, Quote, CheckCircle, List } from 'lucide-react';
 import AnimatedSection from './AnimatedSection';
 import { usePortfolio } from '@/contexts/PortfolioContext';
 
 const About: React.FC = () => {
   const { portfolioData } = usePortfolio();
   const { about } = portfolioData;
+
+  // Function to render different section types
+  const renderCustomSection = (section: any, index: number) => {
+    switch (section.type) {
+      case 'text':
+        return (
+          <div key={section.id || index} className="mb-8">
+            <h3 className="text-xl font-bold mb-3 text-gray-800 dark:text-gray-100">{section.title}</h3>
+            <p className="text-gray-600 dark:text-gray-300">{section.content}</p>
+          </div>
+        );
+      case 'quote':
+        return (
+          <div key={section.id || index} className="mb-8 bg-gray-50 dark:bg-gray-800/50 p-6 rounded-xl border border-gray-100 dark:border-gray-700">
+            <div className="flex items-start gap-3">
+              <Quote size={24} className="text-portfolio-purple mt-1 flex-shrink-0" />
+              <div>
+                <p className="text-gray-600 dark:text-gray-300 italic">{section.content}</p>
+                <h4 className="text-lg font-bold mt-3 text-gray-800 dark:text-gray-100">{section.title}</h4>
+              </div>
+            </div>
+          </div>
+        );
+      case 'highlight':
+        return (
+          <div key={section.id || index} className="mb-8 bg-portfolio-purple/10 p-6 rounded-xl">
+            <h3 className="text-xl font-bold mb-3 text-portfolio-purple">{section.title}</h3>
+            <p className="text-gray-700 dark:text-gray-200">{section.content}</p>
+          </div>
+        );
+      case 'list':
+        const items = section.content.split('\n').filter((item: string) => item.trim());
+        return (
+          <div key={section.id || index} className="mb-8">
+            <h3 className="text-xl font-bold mb-3 text-gray-800 dark:text-gray-100">{section.title}</h3>
+            <ul className="space-y-2">
+              {items.map((item: string, i: number) => (
+                <li key={i} className="flex items-start gap-3">
+                  <CheckCircle size={20} className="text-portfolio-green mt-1 flex-shrink-0" />
+                  <span className="text-gray-600 dark:text-gray-300">{item.trim()}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
 
   return (
     <section id="about" className="py-20 bg-gray-50 dark:bg-gray-900/50">
@@ -100,6 +149,16 @@ const About: React.FC = () => {
             </div>
           </AnimatedSection>
         </div>
+        
+        {/* Custom sections - only shown if any exist */}
+        {about.sections && about.sections.length > 0 && (
+          <AnimatedSection className="mt-16">
+            <h3 className="text-2xl font-bold mb-8 text-center text-gray-800 dark:text-gray-100">More About Me</h3>
+            <div className="grid md:grid-cols-2 gap-8">
+              {about.sections.map((section, index) => renderCustomSection(section, index))}
+            </div>
+          </AnimatedSection>
+        )}
       </div>
     </section>
   );

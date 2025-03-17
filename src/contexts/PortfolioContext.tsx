@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 // Define types for all editable portfolio sections
@@ -13,6 +12,13 @@ export interface Project {
   isHidden: boolean;
 }
 
+export interface CustomSection {
+  id: string;
+  title: string;
+  content: string;
+  type: 'text' | 'quote' | 'highlight' | 'list';
+}
+
 export interface AboutData {
   background: string;
   yearsOfExperience: string;
@@ -23,6 +29,7 @@ export interface AboutData {
   certifications: string;
   headshot: string;
   journey: string;
+  sections?: CustomSection[];
 }
 
 export interface Dashboard {
@@ -83,7 +90,21 @@ const initialPortfolioData: PortfolioData = {
     university: "State University",
     certifications: "Google Data Analytics, Microsoft Power BI, AWS Data Analytics Specialty",
     headshot: "https://images.unsplash.com/photo-1569913486515-b74bf7751574?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=900&q=80",
-    journey: "With a background in Statistics and Data Science, I've developed a passion for uncovering the stories hidden within data. My analytical approach combines technical expertise with creative problem-solving to deliver insights that drive business value."
+    journey: "With a background in Statistics and Data Science, I've developed a passion for uncovering the stories hidden within data. My analytical approach combines technical expertise with creative problem-solving to deliver insights that drive business value.",
+    sections: [
+      {
+        id: "1",
+        title: "My Data Philosophy",
+        content: "I believe that good data analysis is as much about asking the right questions as it is about having the right tools. Every dataset tells a story, and my job is to help you understand what that story means for your business.",
+        type: "text"
+      },
+      {
+        id: "2",
+        title: "Client Testimonial",
+        content: "Working with this data analyst was transformative for our business. The insights provided helped us increase our revenue by 30% in just six months.",
+        type: "quote"
+      }
+    ]
   },
   projects: [
     {
