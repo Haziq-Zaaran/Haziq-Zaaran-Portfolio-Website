@@ -1,7 +1,9 @@
-
-import React from 'react';
-import { FileText, Download, Briefcase, Calendar, GraduationCap } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { FileText, Download, Briefcase, Calendar, GraduationCap, Upload, Trash2 } from 'lucide-react';
 import AnimatedSection from './AnimatedSection';
+import { Button } from '@/components/ui/button';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from '@/hooks/use-toast';
 
 // Customize your professional experience
 const experiences = [
@@ -75,10 +77,132 @@ const certifications = [
   }
 ];
 
-// Customize your resume download link
-const resumeDownloadLink = "#"; // Replace with actual link to your resume file
+interface ResumeFile {
+  id: string;
+  fileName: string;
+  url: string;
+}
 
 const Resume: React.FC = () => {
+  const [resumeFile, setResumeFile] = useState<ResumeFile | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const { isAuthenticated } = useAuth();
+
+  useEffect(() => {
+    const fetchResume = async () => {
+      try {
+        const response = await fetch('/api/resume');
+        if (response.ok) {
+          const data = await response.json();
+          setResumeFile(data);
+        }
+      } catch (error) {
+        console.error('Error fetching resume:', error);
+      }
+    };
+    fetchResume();
+  }, []);
+
+  const handleDownload = () => {
+    if (resumeFile?.url) {
+      const link = document.createElement('a');
+      link.href = resumeFile.url;
+      link.download = resumeFile.fileName;
+      link.click();
+    } else {
+      toast({
+        title: "Resume not available",
+        description: "The resume file is not currently available for download.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    
+    const file = e.target.files[0];
+    const allowedTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'];
+    
+    if (!allowedTypes.includes(file.type)) {
+      toast({
+        title: "Invalid file type",
+        description: "Please upload a PDF, DOCX, or TXT file.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    const formData = new FormData();
+    formData.append('resume', file);
+    
+    try {
+      setTimeout(() => {
+        setResumeFile({
+          id: Date.now().toString(),
+          fileName: file.name,
+          url: URL.createObjectURL(file)
+        });
+        setIsLoading(false);
+        toast({
+          title: "Resume uploaded",
+          description: "Your resume has been uploaded successfully.",
+        });
+      }, 1000);
+      
+      // Actual implementation would be:
+      // const response = await fetch('/api/resume', {
+      //   method: 'POST',
+      //   body: formData,
+      // });
+      // if (response.ok) {
+      //   const data = await response.json();
+      //   setResumeFile(data);
+      // }
+    } catch (error) {
+      console.error('Error uploading resume:', error);
+      toast({
+        title: "Upload failed",
+        description: "There was an error uploading your resume.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    setIsLoading(true);
+    try {
+      setTimeout(() => {
+        setResumeFile(null);
+        setIsLoading(false);
+        toast({
+          title: "Resume deleted",
+          description: "Your resume has been removed successfully.",
+        });
+      }, 1000);
+      
+      // Actual implementation would be:
+      // const response = await fetch('/api/resume', {
+      //   method: 'DELETE',
+      // });
+      // if (response.ok) {
+      //   setResumeFile(null);
+      // }
+    } catch (error) {
+      console.error('Error deleting resume:', error);
+      toast({
+        title: "Delete failed",
+        description: "There was an error deleting your resume.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <section id="resume" className="py-20">
       <div className="section-container">
@@ -87,15 +211,56 @@ const Resume: React.FC = () => {
           <p className="max-w-3xl mx-auto text-lg text-gray-600 dark:text-gray-300">
             My professional journey and educational background in the field of data analysis.
           </p>
-          <div className="mt-6">
-            <a 
-              href={resumeDownloadLink} 
-              className="btn-primary inline-flex items-center gap-2"
-              role="button"
-            >
-              <Download size={18} />
-              Download Full Resume
-            </a>
+          <div className="mt-6 flex flex-wrap gap-4 justify-center">
+            {resumeFile ? (
+              <Button 
+                onClick={handleDownload}
+                className="btn-primary inline-flex items-center gap-2"
+              >
+                <Download size={18} />
+                Download Resume
+              </Button>
+            ) : (
+              <Button 
+                disabled
+                variant="outline"
+                className="inline-flex items-center gap-2 opacity-70"
+              >
+                <Download size={18} />
+                Resume Not Available
+              </Button>
+            )}
+            
+            {isAuthenticated && (
+              <>
+                {resumeFile ? (
+                  <Button 
+                    variant="destructive"
+                    onClick={handleDelete}
+                    disabled={isLoading}
+                    className="inline-flex items-center gap-2"
+                  >
+                    <Trash2 size={18} />
+                    {isLoading ? 'Deleting...' : 'Delete Resume'}
+                  </Button>
+                ) : (
+                  <Button 
+                    variant="outline"
+                    disabled={isLoading}
+                    className="inline-flex items-center gap-2 relative overflow-hidden"
+                  >
+                    <input
+                      type="file"
+                      accept=".pdf,.docx,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"
+                      onChange={handleUpload}
+                      className="absolute inset-0 opacity-0 cursor-pointer"
+                    />
+                    <Upload size={18} />
+                    {isLoading ? 'Uploading...' : 'Upload Resume'}
+                  </Button>
+                )}
+              </>
+            )}
           </div>
         </AnimatedSection>
         
