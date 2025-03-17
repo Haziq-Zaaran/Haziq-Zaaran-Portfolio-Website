@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 // Define types for all editable portfolio sections
@@ -64,6 +65,7 @@ export interface HeroData {
   title: string;
   subtitle: string;
   description: string;
+  heroImage?: string;  // Add heroImage property
 }
 
 export interface PortfolioData {
@@ -209,7 +211,8 @@ const initialPortfolioData: PortfolioData = {
   hero: {
     title: "Turning Data into Actionable Insights",
     subtitle: "Data Analyst Portfolio",
-    description: "I transform complex data into clear, compelling stories that drive strategic decisions. Explore my portfolio to see how I leverage data analysis to solve real-world problems."
+    description: "I transform complex data into clear, compelling stories that drive strategic decisions. Explore my portfolio to see how I leverage data analysis to solve real-world problems.",
+    heroImage: "" // Initialize with empty string
   }
 };
 
@@ -373,4 +376,3 @@ export const usePortfolio = (): PortfolioContextType => {
   }
   return context;
 };
-
