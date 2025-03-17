@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, Download, Briefcase, Calendar, GraduationCap, Upload, Trash2 } from 'lucide-react';
+import { FileText, Download, Briefcase, Calendar, GraduationCap, Upload, Trash2, Eye, FilePlus } from 'lucide-react';
 import AnimatedSection from './AnimatedSection';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { getStoredResume, storeResume, removeStoredResume, ResumeFile } from '@/models/ResumeModel';
 
 // Customize your professional experience
 const experiences = [
@@ -77,30 +79,17 @@ const certifications = [
   }
 ];
 
-interface ResumeFile {
-  id: string;
-  fileName: string;
-  url: string;
-}
-
 const Resume: React.FC = () => {
   const [resumeFile, setResumeFile] = useState<ResumeFile | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
   const { isAuthenticated } = useAuth();
 
   useEffect(() => {
-    const fetchResume = async () => {
-      try {
-        const response = await fetch('/api/resume');
-        if (response.ok) {
-          const data = await response.json();
-          setResumeFile(data);
-        }
-      } catch (error) {
-        console.error('Error fetching resume:', error);
-      }
-    };
-    fetchResume();
+    const storedResume = getStoredResume();
+    if (storedResume) {
+      setResumeFile(storedResume);
+    }
   }, []);
 
   const handleDownload = () => {
@@ -133,33 +122,38 @@ const Resume: React.FC = () => {
       return;
     }
 
+    const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+    if (file.size > maxSize) {
+      toast({
+        title: "File too large",
+        description: "Please upload a file smaller than 5MB.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
-    const formData = new FormData();
-    formData.append('resume', file);
     
     try {
-      setTimeout(() => {
-        setResumeFile({
-          id: Date.now().toString(),
-          fileName: file.name,
-          url: URL.createObjectURL(file)
-        });
-        setIsLoading(false);
-        toast({
-          title: "Resume uploaded",
-          description: "Your resume has been uploaded successfully.",
-        });
-      }, 1000);
+      const fileUrl = URL.createObjectURL(file);
       
-      // Actual implementation would be:
-      // const response = await fetch('/api/resume', {
-      //   method: 'POST',
-      //   body: formData,
-      // });
-      // if (response.ok) {
-      //   const data = await response.json();
-      //   setResumeFile(data);
-      // }
+      const newResumeFile: ResumeFile = {
+        id: Date.now().toString(),
+        fileName: file.name,
+        fileType: file.type,
+        lastModified: file.lastModified,
+        url: fileUrl,
+        size: file.size
+      };
+      
+      storeResume(newResumeFile);
+      
+      setResumeFile(newResumeFile);
+      
+      toast({
+        title: "Resume uploaded",
+        description: "Your resume has been uploaded successfully.",
+      });
     } catch (error) {
       console.error('Error uploading resume:', error);
       toast({
@@ -175,22 +169,18 @@ const Resume: React.FC = () => {
   const handleDelete = async () => {
     setIsLoading(true);
     try {
-      setTimeout(() => {
-        setResumeFile(null);
-        setIsLoading(false);
-        toast({
-          title: "Resume deleted",
-          description: "Your resume has been removed successfully.",
-        });
-      }, 1000);
+      removeStoredResume();
       
-      // Actual implementation would be:
-      // const response = await fetch('/api/resume', {
-      //   method: 'DELETE',
-      // });
-      // if (response.ok) {
-      //   setResumeFile(null);
-      // }
+      if (resumeFile?.url && resumeFile.url.startsWith('blob:')) {
+        URL.revokeObjectURL(resumeFile.url);
+      }
+      
+      setResumeFile(null);
+      
+      toast({
+        title: "Resume deleted",
+        description: "Your resume has been removed successfully.",
+      });
     } catch (error) {
       console.error('Error deleting resume:', error);
       toast({
@@ -200,6 +190,12 @@ const Resume: React.FC = () => {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handlePreview = () => {
+    if (resumeFile) {
+      setPreviewOpen(true);
     }
   };
 
@@ -213,27 +209,25 @@ const Resume: React.FC = () => {
           </p>
           <div className="mt-6 flex flex-wrap gap-4 justify-center">
             {resumeFile ? (
-              <Button 
-                onClick={handleDownload}
-                className="btn-primary inline-flex items-center gap-2"
-              >
-                <Download size={18} />
-                Download Resume
-              </Button>
-            ) : (
-              <Button 
-                disabled
-                variant="outline"
-                className="inline-flex items-center gap-2 opacity-70"
-              >
-                <Download size={18} />
-                Resume Not Available
-              </Button>
-            )}
-            
-            {isAuthenticated && (
-              <>
-                {resumeFile ? (
+              <div className="flex flex-wrap gap-3 justify-center">
+                <Button 
+                  onClick={handleDownload}
+                  className="btn-primary inline-flex items-center gap-2"
+                >
+                  <Download size={18} />
+                  Download Resume
+                </Button>
+                
+                <Button 
+                  variant="outline"
+                  onClick={handlePreview}
+                  className="inline-flex items-center gap-2"
+                >
+                  <Eye size={18} />
+                  Preview Resume
+                </Button>
+                
+                {isAuthenticated && (
                   <Button 
                     variant="destructive"
                     onClick={handleDelete}
@@ -243,7 +237,20 @@ const Resume: React.FC = () => {
                     <Trash2 size={18} />
                     {isLoading ? 'Deleting...' : 'Delete Resume'}
                   </Button>
-                ) : (
+                )}
+              </div>
+            ) : (
+              <div className="flex flex-wrap gap-3 justify-center">
+                <Button 
+                  disabled
+                  variant="outline"
+                  className="inline-flex items-center gap-2 opacity-70"
+                >
+                  <Download size={18} />
+                  Resume Not Available
+                </Button>
+                
+                {isAuthenticated && (
                   <Button 
                     variant="outline"
                     disabled={isLoading}
@@ -255,13 +262,19 @@ const Resume: React.FC = () => {
                       onChange={handleUpload}
                       className="absolute inset-0 opacity-0 cursor-pointer"
                     />
-                    <Upload size={18} />
+                    <FilePlus size={18} />
                     {isLoading ? 'Uploading...' : 'Upload Resume'}
                   </Button>
                 )}
-              </>
+              </div>
             )}
           </div>
+          
+          {resumeFile && (
+            <div className="mt-4 text-sm text-gray-500">
+              <p>Current resume: {resumeFile.fileName} ({(resumeFile.size / 1024).toFixed(2)} KB)</p>
+            </div>
+          )}
         </AnimatedSection>
         
         <div className="grid md:grid-cols-3 gap-8">
@@ -339,6 +352,42 @@ const Resume: React.FC = () => {
           </AnimatedSection>
         </div>
       </div>
+      
+      <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
+        <DialogContent className="max-w-4xl w-[90vw] max-h-[90vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle>Resume Preview - {resumeFile?.fileName}</DialogTitle>
+            <DialogDescription>
+              Your uploaded resume document
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="flex-1 min-h-0 mt-4 overflow-auto">
+            {resumeFile?.fileType === 'application/pdf' ? (
+              <iframe 
+                src={resumeFile.url} 
+                className="w-full h-full min-h-[70vh] border rounded"
+                title="Resume Preview"
+              ></iframe>
+            ) : (
+              <div className="flex items-center justify-center h-full min-h-[50vh] border rounded p-4 bg-gray-50 dark:bg-gray-900">
+                <div className="text-center">
+                  <FileText size={48} className="mx-auto mb-4 text-gray-400" />
+                  <h3 className="text-lg font-medium">Preview not available</h3>
+                  <p className="mt-2 text-sm text-gray-500">
+                    This file type ({resumeFile?.fileType.split('/')[1]}) cannot be previewed directly.
+                    <br />Please download the file to view it.
+                  </p>
+                  <Button onClick={handleDownload} className="mt-4">
+                    <Download size={16} className="mr-2" />
+                    Download to view
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 };
