@@ -12,12 +12,12 @@ import SafeAdminView from '@/components/admin/SafeAdminView';
 import { SkillsProvider } from '@/contexts/SkillsContext';
 
 const Admin: React.FC = () => {
-  const [activeTab, setActiveTab] = useState('general');
+  const [activeTab, setActiveTab] = useState('hero');
   
   return (
     <SkillsProvider>
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900/50 pb-12">
-        <AdminHeader />
+        <AdminHeader activeTab={activeTab} setActiveTab={setActiveTab} />
         
         <main className="container max-w-6xl mx-auto p-4 md:p-6 pt-20">
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 mb-6">
@@ -28,42 +28,44 @@ const Admin: React.FC = () => {
           </div>
           
           <SafeAdminView>
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-              <TabsList className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm">
-                <TabsTrigger value="general">Hero</TabsTrigger>
-                <TabsTrigger value="about">About</TabsTrigger>
-                <TabsTrigger value="projects">Projects</TabsTrigger>
-                <TabsTrigger value="dashboards">Dashboards</TabsTrigger>
-                <TabsTrigger value="skills">Skills</TabsTrigger>
-                <TabsTrigger value="contact">Contact</TabsTrigger>
-              </TabsList>
-              
-              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-                <TabsContent value="general">
-                  <HeroAdmin />
-                </TabsContent>
+            {(data) => (
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+                <TabsList className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm">
+                  <TabsTrigger value="hero">Hero</TabsTrigger>
+                  <TabsTrigger value="about">About</TabsTrigger>
+                  <TabsTrigger value="projects">Projects</TabsTrigger>
+                  <TabsTrigger value="dashboards">Dashboards</TabsTrigger>
+                  <TabsTrigger value="skills">Skills</TabsTrigger>
+                  <TabsTrigger value="contact">Contact</TabsTrigger>
+                </TabsList>
                 
-                <TabsContent value="about">
-                  <AboutAdmin />
-                </TabsContent>
-                
-                <TabsContent value="projects">
-                  <ProjectsAdmin />
-                </TabsContent>
-                
-                <TabsContent value="dashboards">
-                  <DashboardsAdmin />
-                </TabsContent>
-                
-                <TabsContent value="skills">
-                  <SkillsAdmin />
-                </TabsContent>
-                
-                <TabsContent value="contact">
-                  <ContactAdmin />
-                </TabsContent>
-              </div>
-            </Tabs>
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+                  <TabsContent value="hero">
+                    <HeroAdmin />
+                  </TabsContent>
+                  
+                  <TabsContent value="about">
+                    <AboutAdmin />
+                  </TabsContent>
+                  
+                  <TabsContent value="projects">
+                    <ProjectsAdmin />
+                  </TabsContent>
+                  
+                  <TabsContent value="dashboards">
+                    <DashboardsAdmin />
+                  </TabsContent>
+                  
+                  <TabsContent value="skills">
+                    <SkillsAdmin />
+                  </TabsContent>
+                  
+                  <TabsContent value="contact">
+                    <ContactAdmin />
+                  </TabsContent>
+                </div>
+              </Tabs>
+            )}
           </SafeAdminView>
         </main>
       </div>
