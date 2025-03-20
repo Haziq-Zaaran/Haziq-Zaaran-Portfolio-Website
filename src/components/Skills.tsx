@@ -1,60 +1,37 @@
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Database, LineChart, Code, Server, Activity, Layers, FileCode, Table, BarChart4, Cpu, GitBranch, Terminal, FileType } from 'lucide-react';
+import { Database, LineChart, Activity, Layers } from 'lucide-react';
 import AnimatedSection from './AnimatedSection';
-import PythonIcon from './icons/PythonIcon';
-
-interface Skill {
-  name: string;
-  level: number;
-  icon: React.ElementType;
-  category: string;
-}
-
-const skillsData: Skill[] = [
-  // Data Analysis
-  { name: "SQL", level: 90, icon: Database, category: "Data Analysis" },
-  { name: "Excel", level: 95, icon: Table, category: "Data Analysis" },
-  { name: "Statistical Analysis", level: 85, icon: Activity, category: "Data Analysis" },
-  
-  // Data Visualization
-  { name: "Tableau", level: 88, icon: BarChart4, category: "Data Visualization" },
-  { name: "Power BI", level: 82, icon: LineChart, category: "Data Visualization" },
-  { name: "Data Storytelling", level: 90, icon: LineChart, category: "Data Visualization" },
-  
-  // Programming
-  { name: "Python", level: 80, icon: PythonIcon, category: "Programming" },
-  { name: "R", level: 75, icon: Code, category: "Programming" },
-  { name: "JavaScript", level: 65, icon: FileCode, category: "Programming" },
-  
-  // Big Data
-  { name: "Hadoop", level: 60, icon: Server, category: "Big Data" },
-  { name: "Spark", level: 55, icon: Cpu, category: "Big Data" },
-  
-  // Tools & Frameworks
-  { name: "Pandas", level: 85, icon: Layers, category: "Tools & Frameworks" },
-  { name: "Scikit-learn", level: 75, icon: Layers, category: "Tools & Frameworks" },
-  { name: "Git", level: 80, icon: GitBranch, category: "Tools & Frameworks" },
-  { name: "Terminal", level: 85, icon: Terminal, category: "Tools & Frameworks" },
-];
-
-const categories = Array.from(new Set(skillsData.map(skill => skill.category)));
+import { useSkills } from '@/contexts/SkillsContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Skills: React.FC = () => {
-  const [activeCategory, setActiveCategory] = useState(categories[0]);
-  const [visibleSkills, setVisibleSkills] = useState<Skill[]>([]);
+  const { skills, categories, getIconComponent } = useSkills();
+  const { isAuthenticated } = useAuth();
+  const [activeCategory, setActiveCategory] = useState('');
+  const [visibleSkills, setVisibleSkills] = useState<any[]>([]);
   const [animated, setAnimated] = useState(false);
   const sectionRef = useRef<HTMLDivElement>(null);
 
+  // Set initial active category
   useEffect(() => {
-    setVisibleSkills(skillsData.filter(skill => skill.category === activeCategory));
-    setAnimated(false);
-    
-    // Reset animation after filter
-    setTimeout(() => {
-      setAnimated(true);
-    }, 100);
-  }, [activeCategory]);
+    if (categories.length > 0 && !activeCategory) {
+      setActiveCategory(categories[0]);
+    }
+  }, [categories, activeCategory]);
+
+  // Filter skills by active category
+  useEffect(() => {
+    if (activeCategory) {
+      setVisibleSkills(skills.filter(skill => skill.category === activeCategory));
+      setAnimated(false);
+      
+      // Reset animation after filter
+      setTimeout(() => {
+        setAnimated(true);
+      }, 100);
+    }
+  }, [activeCategory, skills]);
 
   // Animation for skill bars
   useEffect(() => {
@@ -104,35 +81,38 @@ const Skills: React.FC = () => {
         </div>
         
         <div className="grid md:grid-cols-2 gap-x-12 gap-y-8">
-          {visibleSkills.map((skill, index) => (
-            <AnimatedSection 
-              key={skill.name} 
-              className="flex flex-col"
-              delay={index * 100}
-            >
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-portfolio-purple/10 flex items-center justify-center text-portfolio-purple">
-                    <skill.icon size={16} />
+          {visibleSkills.map((skill, index) => {
+            const IconComponent = getIconComponent(skill.icon);
+            return (
+              <AnimatedSection 
+                key={skill.id} 
+                className="flex flex-col"
+                delay={index * 100}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-full bg-portfolio-purple/10 flex items-center justify-center text-portfolio-purple">
+                      <IconComponent size={16} />
+                    </div>
+                    <span className="font-medium">{skill.name}</span>
                   </div>
-                  <span className="font-medium">{skill.name}</span>
+                  <span className="text-sm text-gray-500">{skill.level}%</span>
                 </div>
-                <span className="text-sm text-gray-500">{skill.level}%</span>
-              </div>
-              <div className="skill-bar">
-                <div 
-                  className="skill-progress" 
-                  style={{ 
-                    width: animated ? `${skill.level}%` : '0%',
-                    backgroundColor: 
-                      skill.level > 85 ? 'rgb(102, 51, 153)' : // portfolio-purple
-                      skill.level > 70 ? 'rgb(134, 163, 151)' : // portfolio-green
-                      'rgb(212, 180, 131)' // portfolio-gold
-                  }}
-                ></div>
-              </div>
-            </AnimatedSection>
-          ))}
+                <div className="skill-bar">
+                  <div 
+                    className="skill-progress" 
+                    style={{ 
+                      width: animated ? `${skill.level}%` : '0%',
+                      backgroundColor: 
+                        skill.level > 85 ? 'rgb(102, 51, 153)' : // portfolio-purple
+                        skill.level > 70 ? 'rgb(134, 163, 151)' : // portfolio-green
+                        'rgb(212, 180, 131)' // portfolio-gold
+                    }}
+                  ></div>
+                </div>
+              </AnimatedSection>
+            );
+          })}
         </div>
         
         <AnimatedSection className="mt-20">

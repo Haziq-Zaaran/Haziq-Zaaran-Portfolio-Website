@@ -3,6 +3,7 @@ import { Mail, Phone, MapPin, Send, Linkedin, Github } from 'lucide-react';
 import AnimatedSection from './AnimatedSection';
 import { useToast } from '@/hooks/use-toast';
 import { usePortfolio } from '@/contexts/PortfolioContext';
+import { addMessage } from '@/utils/messageUtils';
 
 const Contact: React.FC = () => {
   const { portfolioData } = usePortfolio();
@@ -27,26 +28,17 @@ const Contact: React.FC = () => {
     setIsSubmitting(true);
     
     try {
-      // For now, we'll simulate saving the message
-      // When Supabase is integrated, uncomment and use this code:
-      /*
-      const { data, error } = await supabase
-        .from('messages')
-        .insert([
-          { 
-            name: formData.name,
-            email: formData.email,
-            subject: formData.subject,
-            message: formData.message
-          }
-        ]);
-      
-      if (error) throw error;
-      */
+      // Add message to localStorage using utility function
+      addMessage({
+        name: formData.name,
+        email: formData.email,
+        subject: formData.subject,
+        message: formData.message
+      });
 
-      // Log the message details for now
+      // Log the message details
       console.log(`
-        Message details:
+        Message saved:
         From: ${formData.name} (${formData.email})
         Subject: ${formData.subject}
         Message: ${formData.message}
