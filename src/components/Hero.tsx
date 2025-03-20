@@ -1,11 +1,13 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { ArrowDownCircle, Database, LineChart, BarChart4 } from 'lucide-react';
 import AnimatedSection from './AnimatedSection';
 import { usePortfolio } from '@/contexts/PortfolioContext';
+import { useToast } from '@/hooks/use-toast';
 
 const Hero: React.FC = () => {
   const { portfolioData } = usePortfolio();
+  const { toast } = useToast();
   
   // Default values if hero data is not available
   const defaultHero = {
@@ -15,9 +17,27 @@ const Hero: React.FC = () => {
     heroImage: ""
   };
   
-  // Use a nullish coalescing operator to handle potentially undefined values
+  // Use nullish coalescing to handle potentially undefined values, with console for debugging
   const hero = portfolioData?.hero || defaultHero;
   
+  // Log hero data for debugging purposes
+  useEffect(() => {
+    console.log("Hero data:", hero);
+    
+    if (!portfolioData?.hero) {
+      console.warn("Hero data is missing or undefined");
+      
+      // Show a toast notification for admins (only on the admin page)
+      if (window.location.pathname.includes('/admin')) {
+        toast({
+          title: "Hero Data Missing",
+          description: "Default values are being used. Please update your hero section.",
+          variant: "destructive",
+        });
+      }
+    }
+  }, [portfolioData, toast]);
+
   const scrollToProjects = () => {
     const projectsSection = document.getElementById('projects');
     if (projectsSection) {

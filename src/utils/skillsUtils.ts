@@ -39,3 +39,26 @@ export const storeSkills = (skills: any[]): void => {
     console.error('Error storing skills:', error);
   }
 };
+
+// Helper to validate localStorage data
+export const validateLocalStorage = (): boolean => {
+  try {
+    // Test if localStorage works
+    localStorage.setItem('test', 'test');
+    localStorage.removeItem('test');
+    return true;
+  } catch (error) {
+    console.error('LocalStorage is not available:', error);
+    return false;
+  }
+};
+
+// Helper to clear cached data and reset to default
+export const resetLocalStorageData = (key: string): void => {
+  try {
+    localStorage.removeItem(key);
+    console.log(`Reset ${key} data in localStorage`);
+  } catch (error) {
+    console.error(`Error resetting ${key} in localStorage:`, error);
+  }
+};
