@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { usePortfolio } from '@/contexts/PortfolioContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,9 +7,13 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { Save, Upload, Image, AlertTriangle } from 'lucide-react';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Save, Upload, Image as ImageIcon, AlertTriangle } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import ImageUploader from './ImageUploader';
+import ImageGallery from './ImageGallery';
+import { saveImageToLocalStorage, generateImageId } from '@/utils/imageUtils';
 
 const HeroAdmin: React.FC = () => {
   const { portfolioData, updateHero } = usePortfolio();
@@ -17,6 +22,7 @@ const HeroAdmin: React.FC = () => {
   const [imageUrl, setImageUrl] = useState('');
   const [showImageDialog, setShowImageDialog] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState('upload');
 
   const [formData, setFormData] = useState({
     title: 'Turning Data into Actionable Insights',
@@ -62,7 +68,7 @@ const HeroAdmin: React.FC = () => {
     try {
       const updatedHero = {
         ...formData,
-        heroImage: portfolioData?.hero?.heroImage || ''
+        heroImage: imageUrl || portfolioData?.hero?.heroImage || ''
       };
       
       console.log("Updating hero with:", updatedHero);
@@ -82,19 +88,28 @@ const HeroAdmin: React.FC = () => {
     }
   };
 
-  const handleImageSubmit = () => {
-    if (imageUrl.trim()) {
+  const handleImageSelect = (dataUrl: string) => {
+    setImageUrl(dataUrl);
+    
+    if (dataUrl) {
       try {
+        // Save the image to local storage if it's new (data URL and not already in storage)
+        if (dataUrl.startsWith('data:') && dataUrl !== portfolioData?.hero?.heroImage) {
+          const imageId = generateImageId();
+          saveImageToLocalStorage(imageId, dataUrl);
+          console.log("Saved new hero image to storage with ID:", imageId);
+        }
+        
+        // Update hero data with new image
         updateHero({ 
           ...formData,
-          heroImage: imageUrl 
+          heroImage: dataUrl 
         });
         
         toast({
           title: 'Hero Image Updated',
           description: 'Your hero image has been updated successfully.',
         });
-        setShowImageDialog(false);
       } catch (err) {
         console.error("Error updating hero image:", err);
         toast({
@@ -103,13 +118,9 @@ const HeroAdmin: React.FC = () => {
           variant: 'destructive'
         });
       }
-    } else {
-      toast({
-        title: 'Error',
-        description: 'Please enter a valid image URL.',
-        variant: 'destructive'
-      });
     }
+    
+    setShowImageDialog(false);
   };
 
   const handleImageReset = () => {
@@ -200,7 +211,7 @@ const HeroAdmin: React.FC = () => {
               <div className="flex justify-between items-center mb-2">
                 <Label>Hero Background Image</Label>
                 <div className="flex space-x-2">
-                  {portfolioData?.hero?.heroImage && (
+                  {(portfolioData?.hero?.heroImage || imageUrl) && (
                     <Button 
                       variant="outline" 
                       size="sm" 
@@ -213,57 +224,43 @@ const HeroAdmin: React.FC = () => {
                   <Dialog open={showImageDialog} onOpenChange={setShowImageDialog}>
                     <DialogTrigger asChild>
                       <Button variant="outline" size="sm">
-                        <Image className="h-4 w-4 mr-2" />
+                        <ImageIcon className="h-4 w-4 mr-2" />
                         Change Image
                       </Button>
                     </DialogTrigger>
-                    <DialogContent>
+                    <DialogContent className="sm:max-w-[600px]">
                       <DialogHeader>
                         <DialogTitle>Update Hero Image</DialogTitle>
                         <DialogDescription>
-                          Enter the URL of the image you want to use for your hero section.
+                          Upload a new image or select one from your gallery
                         </DialogDescription>
                       </DialogHeader>
-                      <div className="space-y-4 py-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="imageUrl">Image URL</Label>
-                          <Input
-                            id="imageUrl"
-                            placeholder="https://example.com/image.jpg"
-                            value={imageUrl}
-                            onChange={(e) => setImageUrl(e.target.value)}
+                      <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="mt-4">
+                        <TabsList className="grid grid-cols-2 mb-4">
+                          <TabsTrigger value="upload">Upload New</TabsTrigger>
+                          <TabsTrigger value="gallery">From Gallery</TabsTrigger>
+                        </TabsList>
+                        
+                        <TabsContent value="upload" className="py-4">
+                          <ImageUploader 
+                            onImageSelect={handleImageSelect} 
+                            currentImage={portfolioData?.hero?.heroImage || ''}
                           />
-                        </div>
-                        {imageUrl && (
-                          <div className="border rounded-md overflow-hidden h-48 flex items-center justify-center">
-                            <img 
-                              src={imageUrl} 
-                              alt="Preview" 
-                              className="max-w-full max-h-full object-contain"
-                              onError={(e) => {
-                                e.currentTarget.src = 'https://via.placeholder.com/400x200?text=Invalid+Image+URL';
-                              }} 
-                            />
-                          </div>
-                        )}
-                        <div className="flex justify-end space-x-2">
-                          <Button variant="outline" onClick={() => setShowImageDialog(false)}>
-                            Cancel
-                          </Button>
-                          <Button onClick={handleImageSubmit} type="button">
-                            Update Image
-                          </Button>
-                        </div>
-                      </div>
+                        </TabsContent>
+                        
+                        <TabsContent value="gallery" className="py-4">
+                          <ImageGallery onSelectImage={handleImageSelect} />
+                        </TabsContent>
+                      </Tabs>
                     </DialogContent>
                   </Dialog>
                 </div>
               </div>
               <div className="border rounded-md p-4 bg-gray-50 text-center">
-                {portfolioData?.hero?.heroImage ? (
+                {(portfolioData?.hero?.heroImage || imageUrl) ? (
                   <div className="relative h-32 overflow-hidden rounded-md">
                     <img 
-                      src={portfolioData.hero.heroImage} 
+                      src={imageUrl || portfolioData?.hero?.heroImage} 
                       alt="Hero background"
                       className="w-full h-full object-cover"
                       onError={(e) => {

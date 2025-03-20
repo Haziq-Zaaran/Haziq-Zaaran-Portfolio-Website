@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { usePortfolio } from '@/contexts/PortfolioContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,9 +8,12 @@ import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { useToast } from '@/hooks/use-toast';
-import { Save, Plus, Trash2, ChevronUp, ChevronDown, RefreshCw, MoveHorizontal, MoveVertical, Square } from 'lucide-react';
+import { Save, Plus, Trash2, ChevronUp, ChevronDown, RefreshCw, MoveHorizontal, MoveVertical, Square, ImageIcon } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import SafeAdminView from './SafeAdminView';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { ImageUploader } from '@/components/ui/image-uploader';
+import { ImageGallery } from '@/components/ui/image-gallery';
 
 const AboutAdmin: React.FC = () => {
   const { portfolioData, updateAbout } = usePortfolio();
@@ -39,7 +41,9 @@ const AboutAdmin: React.FC = () => {
     sections: portfolioData.about.sections || []
   });
 
-  // Sync headshot URL with headshotSettings URL on initial load
+  const [showImageDialog, setShowImageDialog] = useState(false);
+  const [activeImageTab, setActiveImageTab] = useState('upload');
+  
   useEffect(() => {
     if (formData.headshot && !formData.headshotSettings.url) {
       setFormData(prev => ({
@@ -56,7 +60,6 @@ const AboutAdmin: React.FC = () => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
 
-    // If updating the headshot URL, also update it in the headshotSettings
     if (name === 'headshot') {
       setFormData(prev => ({
         ...prev,
@@ -89,6 +92,26 @@ const AboutAdmin: React.FC = () => {
         }
       }
     }));
+  };
+
+  const handleImageSelect = (dataUrl: string) => {
+    setFormData(prev => ({
+      ...prev,
+      headshot: dataUrl,
+      headshotSettings: {
+        ...prev.headshotSettings,
+        url: dataUrl
+      }
+    }));
+    
+    setShowImageDialog(false);
+    
+    if (dataUrl) {
+      toast({
+        title: 'Headshot Updated',
+        description: 'Your headshot image has been updated successfully.',
+      });
+    }
   };
 
   const resetHeadshotSettings = () => {
@@ -292,15 +315,63 @@ const AboutAdmin: React.FC = () => {
             <CardContent className="space-y-6">
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="headshot-url">Image URL</Label>
-                    <Input
-                      id="headshot-url"
-                      name="headshot"
-                      value={formData.headshot}
-                      onChange={handleChange}
-                      placeholder="Enter image URL"
-                    />
+                  <div className="flex justify-between items-center">
+                    <Label>Headshot Image</Label>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => setShowImageDialog(true)}
+                    >
+                      <ImageIcon size={16} className="mr-2" />
+                      Change Image
+                    </Button>
+                  </div>
+                  
+                  <Dialog open={showImageDialog} onOpenChange={setShowImageDialog}>
+                    <DialogContent className="sm:max-w-[600px]">
+                      <DialogHeader>
+                        <DialogTitle>Update Headshot Image</DialogTitle>
+                        <DialogDescription>
+                          Upload a new image or select one from your gallery
+                        </DialogDescription>
+                      </DialogHeader>
+                      <Tabs defaultValue={activeImageTab} onValueChange={setActiveImageTab} className="mt-4">
+                        <TabsList className="grid grid-cols-2 mb-4">
+                          <TabsTrigger value="upload">Upload New</TabsTrigger>
+                          <TabsTrigger value="gallery">From Gallery</TabsTrigger>
+                        </TabsList>
+                        
+                        <TabsContent value="upload" className="py-4">
+                          <ImageUploader 
+                            onImageSelect={handleImageSelect} 
+                            currentImage={formData.headshotSettings.url || formData.headshot}
+                            label="Upload Headshot"
+                          />
+                        </TabsContent>
+                        
+                        <TabsContent value="gallery" className="py-4">
+                          <ImageGallery onSelectImage={handleImageSelect} />
+                        </TabsContent>
+                      </Tabs>
+                    </DialogContent>
+                  </Dialog>
+                  
+                  <div className="border rounded-lg overflow-hidden aspect-square relative">
+                    {formData.headshotSettings.url ? (
+                      <img 
+                        src={formData.headshotSettings.url} 
+                        alt="Headshot preview" 
+                        className="w-full h-full"
+                        style={{
+                          objectFit: formData.headshotSettings.autoFit ? 'cover' : 'contain',
+                          objectPosition: `${formData.headshotSettings.position.x}% ${formData.headshotSettings.position.y}%`
+                        }}
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gray-100 dark:bg-gray-800 text-gray-400">
+                        No image selected
+                      </div>
+                    )}
                   </div>
                   
                   <div className="space-y-2">
