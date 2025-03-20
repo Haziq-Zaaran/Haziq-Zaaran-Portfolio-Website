@@ -12,8 +12,8 @@ import { Save, Plus, Trash2, ChevronUp, ChevronDown, RefreshCw, MoveHorizontal, 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import SafeAdminView from './SafeAdminView';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { ImageUploader } from '@/components/ui/image-uploader';
-import { ImageGallery } from '@/components/ui/image-gallery';
+import ImageUploader from '@/components/admin/ImageUploader';
+import ImageGallery from '@/components/admin/ImageGallery';
 
 const AboutAdmin: React.FC = () => {
   const { portfolioData, updateAbout } = usePortfolio();

@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { Gallery, Image as ImageIcon, Copy, Trash2, Plus } from 'lucide-react';
+import { Images, Image as ImageIcon, Copy, Trash2, Plus } from 'lucide-react';
 import { getSavedImages, deleteImageFromStorage, generateImageId, saveImageToLocalStorage } from '@/utils/imageUtils';
 import ImageUploader from './ImageUploader';
 
@@ -130,7 +130,7 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ onSelectImage }) => {
 
       {Object.keys(images).length === 0 ? (
         <div className="border border-dashed rounded-md p-8 text-center">
-          <Gallery className="h-10 w-10 mx-auto text-gray-400 mb-2" />
+          <Images className="h-10 w-10 mx-auto text-gray-400 mb-2" />
           <p className="text-gray-500 dark:text-gray-400">No images in your gallery yet</p>
           <Button 
             variant="outline" 
@@ -188,3 +188,4 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ onSelectImage }) => {
 };
 
 export default ImageGallery;
+
