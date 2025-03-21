@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 // Define types for all editable portfolio sections
@@ -65,7 +64,8 @@ export interface HeroData {
   title: string;
   subtitle: string;
   description: string;
-  heroImage?: string;  // Add heroImage property
+  heroImage?: string;
+  navigationTitle?: string;
 }
 
 export interface PortfolioData {
@@ -105,8 +105,8 @@ const initialPortfolioData: PortfolioData = {
     headshot: "https://images.unsplash.com/photo-1569913486515-b74bf7751574?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=900&q=80",
     headshotSettings: {
       url: "https://images.unsplash.com/photo-1569913486515-b74bf7751574?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=900&q=80",
-      position: { x: 50, y: 50 }, // Center position (percentage)
-      aspectRatio: 1, // Square by default
+      position: { x: 50, y: 50 },
+      aspectRatio: 1,
       autoFit: true
     },
     journey: "With a background in Statistics and Data Science, I've developed a passion for uncovering the stories hidden within data. My analytical approach combines technical expertise with creative problem-solving to deliver insights that drive business value.",
@@ -212,7 +212,8 @@ const initialPortfolioData: PortfolioData = {
     title: "Turning Data into Actionable Insights",
     subtitle: "Data Analyst Portfolio",
     description: "I transform complex data into clear, compelling stories that drive strategic decisions. Explore my portfolio to see how I leverage data analysis to solve real-world problems.",
-    heroImage: "" // Initialize with empty string
+    heroImage: "",
+    navigationTitle: "DataAnalyst"
   }
 };
 

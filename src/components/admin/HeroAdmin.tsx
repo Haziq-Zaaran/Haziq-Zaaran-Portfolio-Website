@@ -27,7 +27,8 @@ const HeroAdmin: React.FC = () => {
   const [formData, setFormData] = useState({
     title: 'Turning Data into Actionable Insights',
     subtitle: 'Data Analyst Portfolio',
-    description: 'I transform complex data into clear, compelling stories that drive strategic decisions. Explore my portfolio to see how I leverage data analysis to solve real-world problems.'
+    description: 'I transform complex data into clear, compelling stories that drive strategic decisions. Explore my portfolio to see how I leverage data analysis to solve real-world problems.',
+    navigationTitle: 'DataAnalyst'
   });
 
   useEffect(() => {
@@ -40,7 +41,8 @@ const HeroAdmin: React.FC = () => {
         setFormData({
           title: portfolioData.hero.title || formData.title,
           subtitle: portfolioData.hero.subtitle || formData.subtitle,
-          description: portfolioData.hero.description || formData.description
+          description: portfolioData.hero.description || formData.description,
+          navigationTitle: portfolioData.hero.navigationTitle || formData.navigationTitle
         });
         
         if (portfolioData.hero.heroImage) {
@@ -173,6 +175,19 @@ const HeroAdmin: React.FC = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
+              <Label htmlFor="navigationTitle">Navigation Title</Label>
+              <Input
+                id="navigationTitle"
+                name="navigationTitle"
+                value={formData.navigationTitle}
+                onChange={handleChange}
+                placeholder="DataAnalyst"
+              />
+              <p className="text-sm text-gray-500 mt-1">
+                This text will appear in the top navigation bar.
+              </p>
+            </div>
+            <div>
               <Label htmlFor="subtitle">Subtitle</Label>
               <Input
                 id="subtitle"
@@ -181,6 +196,9 @@ const HeroAdmin: React.FC = () => {
                 onChange={handleChange}
                 placeholder="Data Analyst Portfolio"
               />
+              <p className="text-sm text-gray-500 mt-1">
+                This text will appear as the portfolio name in the footer.
+              </p>
             </div>
             <div>
               <Label htmlFor="title">Main Title</Label>
@@ -192,7 +210,7 @@ const HeroAdmin: React.FC = () => {
                 placeholder="Turning Data into Actionable Insights"
               />
               <p className="text-sm text-gray-500 mt-1">
-                The first and third words will be highlighted with special colors.
+                The first and third words will be highlighted with special colors. This text will also appear as the tagline in the footer.
               </p>
             </div>
             <div>

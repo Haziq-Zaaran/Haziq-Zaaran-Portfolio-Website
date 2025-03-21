@@ -4,13 +4,18 @@ import { Menu, X, Moon, Sun, LogIn, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { usePortfolio } from '@/contexts/PortfolioContext';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { isAuthenticated } = useAuth();
+  const { portfolioData } = usePortfolio();
   const navigate = useNavigate();
+
+  // Default navigation title if hero data is not available
+  const navigationTitle = portfolioData?.hero?.navigationTitle || 'DataAnalyst';
 
   useEffect(() => {
     const handleScroll = () => {
@@ -58,7 +63,7 @@ const Navbar = () => {
         <div className="flex justify-between items-center py-4 md:justify-start md:space-x-10">
           <div className="flex justify-start lg:w-0 lg:flex-1">
             <a href="#" className="text-xl font-bold text-portfolio-purple">
-              Data<span className="text-portfolio-gold">Analyst</span>
+              {navigationTitle}<span className="text-portfolio-gold">Portfolio</span>
             </a>
           </div>
 
@@ -177,4 +182,3 @@ const Navbar = () => {
 };
 
 export default Navbar;
-
