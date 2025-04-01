@@ -66,6 +66,7 @@ export interface HeroData {
   description: string;
   heroImage?: string;
   navigationTitle?: string;
+  portfolioHighlight?: string; // New field for the "Portfolio" text
 }
 
 export interface PortfolioData {
@@ -213,7 +214,8 @@ const initialPortfolioData: PortfolioData = {
     subtitle: "Data Analyst Portfolio",
     description: "I transform complex data into clear, compelling stories that drive strategic decisions. Explore my portfolio to see how I leverage data analysis to solve real-world problems.",
     heroImage: "",
-    navigationTitle: "DataAnalyst"
+    navigationTitle: "DataAnalyst",
+    portfolioHighlight: "Portfolio"
   }
 };
 

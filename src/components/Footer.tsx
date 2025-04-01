@@ -8,7 +8,7 @@ const Footer: React.FC = () => {
   
   // Default values if hero data is not available
   const portfolioName = portfolioData?.hero?.subtitle?.split(' ')[0] || "Data Analyst";
-  const portfolioHighlight = portfolioData?.hero?.subtitle?.split(' ').slice(1).join(' ') || "Portfolio";
+  const portfolioHighlight = portfolioData?.hero?.portfolioHighlight || "Portfolio";
   const tagline = portfolioData?.hero?.title || "Transforming data into actionable insights";
   const copyrightName = `${portfolioName} ${portfolioHighlight}`;
 

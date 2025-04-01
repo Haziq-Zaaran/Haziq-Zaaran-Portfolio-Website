@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Menu, X, Moon, Sun, LogIn, User } from 'lucide-react';
+import { Menu, X, Moon, Sun, LogIn, User, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -10,12 +10,13 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, logout } = useAuth();
   const { portfolioData } = usePortfolio();
   const navigate = useNavigate();
 
-  // Default navigation title if hero data is not available
+  // Dynamic navigation title and highlight if available in hero data
   const navigationTitle = portfolioData?.hero?.navigationTitle || 'DataAnalyst';
+  const portfolioHighlight = portfolioData?.hero?.portfolioHighlight || 'Portfolio';
 
   useEffect(() => {
     const handleScroll = () => {
@@ -48,6 +49,11 @@ const Navbar = () => {
     }
   };
 
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
+
   const navLinks = [
     { href: '#about', label: 'About' },
     { href: '#projects', label: 'Projects' },
@@ -63,7 +69,7 @@ const Navbar = () => {
         <div className="flex justify-between items-center py-4 md:justify-start md:space-x-10">
           <div className="flex justify-start lg:w-0 lg:flex-1">
             <a href="#" className="text-xl font-bold text-portfolio-purple">
-              {navigationTitle}<span className="text-portfolio-gold">Portfolio</span>
+              {navigationTitle}<span className="text-portfolio-gold">{portfolioHighlight}</span>
             </a>
           </div>
 
@@ -103,19 +109,27 @@ const Navbar = () => {
             </Button>
 
             {isAuthenticated ? (
-              <Button 
-                onClick={() => navigate('/admin')}
-                variant="outline"
-                className="ml-2"
-              >
-                <User className="mr-2 h-4 w-4" />
-                Admin
-              </Button>
+              <div className="flex items-center space-x-2">
+                <Button 
+                  onClick={() => navigate('/admin')}
+                  variant="outline"
+                >
+                  <User className="mr-2 h-4 w-4" />
+                  Admin
+                </Button>
+                <Button 
+                  onClick={handleLogout}
+                  variant="outline"
+                  className="text-destructive hover:bg-destructive/10"
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Logout
+                </Button>
+              </div>
             ) : (
               <Button 
                 onClick={() => navigate('/login')}
                 variant="outline"
-                className="ml-2"
               >
                 <LogIn className="mr-2 h-4 w-4" />
                 Login
@@ -150,17 +164,31 @@ const Navbar = () => {
             </Button>
 
             {isAuthenticated ? (
-              <Button 
-                onClick={() => {
-                  navigate('/admin');
-                  setIsOpen(false);
-                }}
-                variant="outline"
-                size="sm"
-              >
-                <User className="mr-2 h-4 w-4" />
-                Admin
-              </Button>
+              <div className="flex items-center space-x-2">
+                <Button 
+                  onClick={() => {
+                    navigate('/admin');
+                    setIsOpen(false);
+                  }}
+                  variant="outline"
+                  size="sm"
+                >
+                  <User className="mr-2 h-4 w-4" />
+                  Admin
+                </Button>
+                <Button 
+                  onClick={() => {
+                    handleLogout();
+                    setIsOpen(false);
+                  }}
+                  variant="outline"
+                  size="sm"
+                  className="text-destructive hover:bg-destructive/10"
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Logout
+                </Button>
+              </div>
             ) : (
               <Button 
                 onClick={() => {
