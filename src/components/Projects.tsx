@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React from 'react';
 import { ArrowRight, ExternalLink, Github, Plus, FileCode } from 'lucide-react';
 import AnimatedSection from './AnimatedSection';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './ui/card';
@@ -7,6 +8,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from './ui
 import ProjectForm from './ProjectForm';
 import { usePortfolio, Project } from '@/contexts/PortfolioContext';
 import { getImageKey, getImageUrl } from '@/utils/imageUtils';
+import { useAuth } from '@/contexts/AuthContext';
 
 const ProjectCard: React.FC<{ project: Project; index: number }> = ({ project, index }) => {
   const imageUrl = getImageUrl(getImageKey('project', project.id), project.image);
@@ -75,6 +77,7 @@ const ProjectCard: React.FC<{ project: Project; index: number }> = ({ project, i
 
 const Projects: React.FC = () => {
   const { portfolioData, addProject } = usePortfolio();
+  const { isAuthenticated } = useAuth();
   
   // Filter out hidden projects for display
   const visibleProjects = portfolioData.projects.filter(project => !project.isHidden);
@@ -94,23 +97,25 @@ const Projects: React.FC = () => {
             A showcase of my data analysis work, demonstrating my technical skills and business impact.
           </p>
           
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button className="bg-portfolio-purple hover:bg-portfolio-purple/90">
-                <Plus size={16} className="mr-2" /> Add New Project
-              </Button>
-            </SheetTrigger>
-            <SheetContent className="overflow-y-auto w-full sm:max-w-xl">
-              <SheetHeader className="mb-6">
-                <SheetTitle className="flex items-center gap-2">
-                  <FileCode size={20} /> Add Project to Portfolio
-                </SheetTitle>
-              </SheetHeader>
-              <ProjectForm 
-                onSubmit={handleAddProject}
-              />
-            </SheetContent>
-          </Sheet>
+          {isAuthenticated && (
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button className="bg-portfolio-purple hover:bg-portfolio-purple/90">
+                  <Plus size={16} className="mr-2" /> Add New Project
+                </Button>
+              </SheetTrigger>
+              <SheetContent className="overflow-y-auto w-full sm:max-w-xl">
+                <SheetHeader className="mb-6">
+                  <SheetTitle className="flex items-center gap-2">
+                    <FileCode size={20} /> Add Project to Portfolio
+                  </SheetTitle>
+                </SheetHeader>
+                <ProjectForm 
+                  onSubmit={handleAddProject}
+                />
+              </SheetContent>
+            </Sheet>
+          )}
         </AnimatedSection>
         
         <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
