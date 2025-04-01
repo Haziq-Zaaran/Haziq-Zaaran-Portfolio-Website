@@ -36,6 +36,7 @@ const Dashboard: React.FC = () => {
             
             // Get image from localStorage if available
             const imageUrl = getImageUrl(getImageKey('dashboard', dashboard.id), '');
+            const hasImage = !!imageUrl;
             
             return (
               <AnimatedSection 
@@ -44,12 +45,12 @@ const Dashboard: React.FC = () => {
                 delay={index * 100}
               >
                 <div className="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-md h-full border border-gray-100 dark:border-gray-700 flex flex-col">
-                  {imageUrl ? (
+                  {hasImage ? (
                     <div className="h-56 overflow-hidden">
                       <img 
                         src={imageUrl} 
                         alt={dashboard.title}
-                        className="w-full h-full object-cover" 
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
                       />
                     </div>
                   ) : (
@@ -68,6 +69,8 @@ const Dashboard: React.FC = () => {
                     <a 
                       href={dashboard.link} 
                       className="self-start px-4 py-2 bg-portfolio-purple/10 text-portfolio-purple rounded-lg font-medium flex items-center gap-2 hover:bg-portfolio-purple/20 transition-colors"
+                      target="_blank"
+                      rel="noopener noreferrer"
                     >
                       View Dashboard <ExternalLink size={16} />
                     </a>

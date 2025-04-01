@@ -55,16 +55,11 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ onSubmit, initialData, projec
   });
 
   const handleSubmit = (data: ProjectFormValues) => {
-    // Safely process tags based on their actual type
-    let processedTags: string[] = [];
-    
-    if (typeof data.tags === 'string') {
-      // If it's a string, split by commas and trim each tag
-      processedTags = data.tags.split(',').map(tag => tag.trim()).filter(Boolean);
-    } else if (Array.isArray(data.tags)) {
-      // If it's already an array, use it directly
-      processedTags = data.tags;
-    }
+    // Process tags to always ensure they're an array
+    const processedTags: string[] = 
+      typeof data.tags === 'string' 
+        ? data.tags.split(',').map(tag => tag.trim()).filter(Boolean) 
+        : Array.isArray(data.tags) ? data.tags : [];
     
     // Create the formatted data with the properly processed tags and the current image URL
     const formattedData = {

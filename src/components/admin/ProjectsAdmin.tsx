@@ -54,8 +54,15 @@ const ProjectsAdmin: React.FC = () => {
     });
   };
 
-  const handleUpdateProject = (projectId: number, projectData: Partial<Project>) => {
-    updateProject(projectId, projectData);
+  const handleUpdateProject = (projectId: number, projectData: any) => {
+    // Fix type compatibility issue with tags
+    const processedData: Partial<Project> = {
+      ...projectData,
+      tags: Array.isArray(projectData.tags) ? projectData.tags : 
+            typeof projectData.tags === 'string' ? projectData.tags.split(',').map(tag => tag.trim()).filter(Boolean) : []
+    };
+    
+    updateProject(projectId, processedData);
     setEditingProject(null);
     toast({
       title: "Project Updated",

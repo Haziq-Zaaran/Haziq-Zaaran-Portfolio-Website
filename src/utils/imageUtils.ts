@@ -4,8 +4,16 @@
  */
 
 // Define the supported image types
-export const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
-export const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+export const ACCEPTED_IMAGE_TYPES = [
+  'image/jpeg', 
+  'image/png', 
+  'image/gif', 
+  'image/webp', 
+  'image/svg+xml',
+  'image/bmp',
+  'image/tiff'
+];
+export const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
 /**
  * Convert a File object to a data URL
@@ -57,10 +65,22 @@ export const validateImage = (file: File): { valid: boolean; message?: string } 
  */
 export const saveImageToLocalStorage = (key: string, imageDataUrl: string): void => {
   try {
+    // Check if the image data URL is valid
+    if (!imageDataUrl || !imageDataUrl.startsWith('data:image/')) {
+      console.warn('Invalid image data URL');
+      return;
+    }
+    
     localStorage.setItem(key, imageDataUrl);
+    console.log(`Image saved to localStorage with key: ${key}`);
   } catch (error) {
     console.error('Error saving image to localStorage:', error);
-    throw new Error('Failed to save image. The image might be too large for browser storage.');
+    // Handle localStorage quota exceeded error
+    if (error instanceof DOMException && error.name === 'QuotaExceededError') {
+      throw new Error('Storage quota exceeded. Try using a smaller image or clearing some saved images.');
+    } else {
+      throw new Error('Failed to save image. The image might be too large for browser storage.');
+    }
   }
 };
 
@@ -71,12 +91,12 @@ export const getSavedImages = (): Record<string, string> => {
   const images: Record<string, string> = {};
   
   try {
-    // Filter localStorage for items that start with 'portfolio-image-'
+    // Filter localStorage for items that start with 'portfolio-'
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
-      if (key && key.startsWith('portfolio-image-')) {
+      if (key && key.startsWith('portfolio-')) {
         const value = localStorage.getItem(key);
-        if (value) {
+        if (value && value.startsWith('data:image/')) {
           images[key] = value;
         }
       }
@@ -94,6 +114,7 @@ export const getSavedImages = (): Record<string, string> => {
 export const deleteImageFromStorage = (key: string): void => {
   try {
     localStorage.removeItem(key);
+    console.log(`Image with key "${key}" deleted from localStorage`);
   } catch (error) {
     console.error('Error deleting image:', error);
   }
@@ -128,9 +149,79 @@ export const getImageKey = (section: string, id: string | number): string => {
 export const getImageUrl = (key: string, fallbackUrl: string = ''): string => {
   try {
     const savedImage = localStorage.getItem(key);
-    return savedImage || fallbackUrl;
+    if (savedImage && savedImage.startsWith('data:image/')) {
+      return savedImage;
+    }
+    return fallbackUrl;
   } catch (error) {
     console.error('Error retrieving image:', error);
     return fallbackUrl;
   }
+};
+
+/**
+ * Check if browser supports localStorage
+ */
+export const isLocalStorageAvailable = (): boolean => {
+  try {
+    const testKey = 'test-storage';
+    localStorage.setItem(testKey, testKey);
+    localStorage.removeItem(testKey);
+    return true;
+  } catch (e) {
+    return false;
+  }
+};
+
+/**
+ * Optimize image before saving (reduces size to improve storage efficiency)
+ * This is a simple version - for production, consider more sophisticated image optimization
+ */
+export const optimizeImage = async (file: File, maxWidth = 1200): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        // Only resize if the image is larger than maxWidth
+        if (img.width <= maxWidth) {
+          resolve(event.target?.result as string);
+          return;
+        }
+
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        if (!ctx) {
+          reject(new Error('Could not get canvas context'));
+          return;
+        }
+
+        // Calculate new dimensions maintaining aspect ratio
+        const ratio = maxWidth / img.width;
+        canvas.width = maxWidth;
+        canvas.height = img.height * ratio;
+        
+        // Draw resized image to canvas
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        
+        // Convert to data URL (jpeg has better compression than PNG)
+        const quality = 0.8; // Adjust as needed (0.7-0.85 is a good balance)
+        const optimizedDataUrl = canvas.toDataURL('image/jpeg', quality);
+        resolve(optimizedDataUrl);
+      };
+      
+      img.onerror = () => {
+        reject(new Error('Failed to load image for optimization'));
+      };
+      
+      img.src = event.target?.result as string;
+    };
+    
+    reader.onerror = () => {
+      reject(new Error('Error reading file for optimization'));
+    };
+    
+    reader.readAsDataURL(file);
+  });
 };
