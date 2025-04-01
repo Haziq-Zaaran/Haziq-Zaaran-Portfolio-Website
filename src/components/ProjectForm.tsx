@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -12,6 +12,8 @@ import { Textarea } from './ui/textarea';
 import { Button } from './ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from './ui/card';
 import { Alert, AlertDescription } from './ui/alert';
+import ImageUploader from './ui/image-uploader';
+import { getImageKey, getImageUrl } from '@/utils/imageUtils';
 
 // Define the schema with proper type handling for tags
 const projectSchema = z.object({
@@ -21,7 +23,7 @@ const projectSchema = z.object({
     z.string(),
     z.array(z.string())
   ]),
-  image: z.string().url({ message: 'Please enter a valid image URL' }),
+  image: z.string().optional(),
   demoLink: z.string().url({ message: 'Please enter a valid demo URL' }),
   codeLink: z.string().url({ message: 'Please enter a valid code repository URL' }),
 });
@@ -30,19 +32,25 @@ type ProjectFormValues = z.infer<typeof projectSchema>;
 
 interface ProjectFormProps {
   onSubmit: (data: ProjectFormValues) => void;
+  initialData?: Partial<ProjectFormValues>;
+  projectId?: number;
 }
 
-const ProjectForm: React.FC<ProjectFormProps> = ({ onSubmit }) => {
+const ProjectForm: React.FC<ProjectFormProps> = ({ onSubmit, initialData, projectId }) => {
   const { toast } = useToast();
+  const [imageUrl, setImageUrl] = useState<string>(
+    initialData?.image || (projectId ? getImageUrl(getImageKey('project', projectId), '') : '')
+  );
+  
   const form = useForm<ProjectFormValues>({
     resolver: zodResolver(projectSchema),
     defaultValues: {
-      title: '',
-      description: '',
-      tags: [] as string[], // Initialize as empty array
-      image: '',
-      demoLink: '',
-      codeLink: '',
+      title: initialData?.title || '',
+      description: initialData?.description || '',
+      tags: initialData?.tags || [] as string[],
+      image: initialData?.image || imageUrl,
+      demoLink: initialData?.demoLink || '',
+      codeLink: initialData?.codeLink || '',
     },
   });
 
@@ -52,31 +60,42 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ onSubmit }) => {
     
     if (typeof data.tags === 'string') {
       // If it's a string, split by commas and trim each tag
-      processedTags = data.tags.split(',').map(tag => tag.trim());
+      processedTags = data.tags.split(',').map(tag => tag.trim()).filter(Boolean);
     } else if (Array.isArray(data.tags)) {
       // If it's already an array, use it directly
       processedTags = data.tags;
     }
     
-    // Create the formatted data with the properly processed tags
+    // Create the formatted data with the properly processed tags and the current image URL
     const formattedData = {
       ...data,
-      tags: processedTags
+      tags: processedTags,
+      image: imageUrl // Use the state value
     };
     
     onSubmit(formattedData);
     toast({
-      title: "Project Added",
-      description: `${data.title} has been added to your portfolio`,
+      title: projectId ? "Project Updated" : "Project Added",
+      description: `${data.title} has been ${projectId ? "updated" : "added"} to your portfolio`,
     });
-    form.reset();
+    
+    if (!projectId) {
+      // Only reset the form for new projects, not when editing
+      form.reset();
+      setImageUrl('');
+    }
+  };
+
+  const handleImageSelect = (dataUrl: string) => {
+    setImageUrl(dataUrl);
+    form.setValue('image', dataUrl);
   };
 
   return (
     <Card className="w-full">
       <CardHeader>
         <CardTitle className="text-xl flex items-center gap-2">
-          <Plus size={18} /> Add New Project
+          <Plus size={18} /> {projectId ? 'Edit' : 'Add New'} Project
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -138,22 +157,16 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ onSubmit }) => {
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="image"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Project Image URL</FormLabel>
-                  <FormControl>
-                    <Input 
-                      placeholder="https://example.com/project-image.jpg" 
-                      {...field} 
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <FormItem>
+              <FormLabel>Project Image</FormLabel>
+              <ImageUploader 
+                onImageSelect={handleImageSelect}
+                currentImage={imageUrl}
+                aspectRatio="video"
+                section="project"
+                itemId={projectId || `new-${Date.now()}`}
+              />
+            </FormItem>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
@@ -193,7 +206,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ onSubmit }) => {
 
             <CardFooter className="px-0 pb-0 pt-4">
               <Button type="submit" className="w-full">
-                Add Project <Plus size={16} className="ml-2" />
+                {projectId ? 'Save Changes' : 'Add Project'} {projectId ? <Check size={16} className="ml-2" /> : <Plus size={16} className="ml-2" />}
               </Button>
             </CardFooter>
           </form>

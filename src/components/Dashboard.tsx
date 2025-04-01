@@ -3,6 +3,7 @@ import React from 'react';
 import { LineChart, BarChart, AreaChart, Monitor, ExternalLink } from 'lucide-react';
 import AnimatedSection from './AnimatedSection';
 import { usePortfolio } from '@/contexts/PortfolioContext';
+import { getImageKey, getImageUrl } from '@/utils/imageUtils';
 
 const Dashboard: React.FC = () => {
   const { portfolioData } = usePortfolio();
@@ -33,6 +34,9 @@ const Dashboard: React.FC = () => {
             // Determine which icon to use based on dashboard type
             const IconComponent = dashboardIcons[dashboard.type] || Monitor;
             
+            // Get image from localStorage if available
+            const imageUrl = getImageUrl(getImageKey('dashboard', dashboard.id), '');
+            
             return (
               <AnimatedSection 
                 key={dashboard.id} 
@@ -40,9 +44,19 @@ const Dashboard: React.FC = () => {
                 delay={index * 100}
               >
                 <div className="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-md h-full border border-gray-100 dark:border-gray-700 flex flex-col">
-                  <div className="h-56 bg-gradient-to-br from-portfolio-purple/10 to-portfolio-green/10 flex items-center justify-center p-8">
-                    <IconComponent size={96} className="text-portfolio-purple opacity-70" />
-                  </div>
+                  {imageUrl ? (
+                    <div className="h-56 overflow-hidden">
+                      <img 
+                        src={imageUrl} 
+                        alt={dashboard.title}
+                        className="w-full h-full object-cover" 
+                      />
+                    </div>
+                  ) : (
+                    <div className="h-56 bg-gradient-to-br from-portfolio-purple/10 to-portfolio-green/10 flex items-center justify-center p-8">
+                      <IconComponent size={96} className="text-portfolio-purple opacity-70" />
+                    </div>
+                  )}
                   <div className="p-6 flex-1 flex flex-col">
                     <div className="mb-2">
                       <span className="px-3 py-1 bg-portfolio-purple/10 text-portfolio-purple text-xs font-medium rounded-full">

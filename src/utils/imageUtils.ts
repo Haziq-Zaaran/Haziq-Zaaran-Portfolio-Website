@@ -4,7 +4,7 @@
  */
 
 // Define the supported image types
-export const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+export const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
 export const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
 /**
@@ -112,5 +112,25 @@ export const formatFileSize = (bytes: number): string => {
     return `${(bytes / 1024).toFixed(1)} KB`;
   } else {
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  }
+};
+
+/**
+ * Get a unique image key based on section and identifier 
+ */
+export const getImageKey = (section: string, id: string | number): string => {
+  return `portfolio-${section}-${id}`;
+};
+
+/**
+ * Get image URL from localStorage or fallback to default URL
+ */
+export const getImageUrl = (key: string, fallbackUrl: string = ''): string => {
+  try {
+    const savedImage = localStorage.getItem(key);
+    return savedImage || fallbackUrl;
+  } catch (error) {
+    console.error('Error retrieving image:', error);
+    return fallbackUrl;
   }
 };

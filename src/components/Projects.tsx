@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { ArrowRight, ExternalLink, Github, Plus, FileCode } from 'lucide-react';
 import AnimatedSection from './AnimatedSection';
@@ -7,8 +6,11 @@ import { Button } from './ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from './ui/sheet';
 import ProjectForm from './ProjectForm';
 import { usePortfolio, Project } from '@/contexts/PortfolioContext';
+import { getImageKey, getImageUrl } from '@/utils/imageUtils';
 
 const ProjectCard: React.FC<{ project: Project; index: number }> = ({ project, index }) => {
+  const imageUrl = getImageUrl(getImageKey('project', project.id), project.image);
+
   return (
     <AnimatedSection
       key={project.id}
@@ -18,7 +20,7 @@ const ProjectCard: React.FC<{ project: Project; index: number }> = ({ project, i
       <Card className="h-full flex flex-col overflow-hidden hover:shadow-xl transition-all duration-300 border border-gray-100 dark:border-gray-700">
         <div className="h-48 overflow-hidden">
           <img
-            src={project.image}
+            src={imageUrl}
             alt={project.title}
             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
           />
