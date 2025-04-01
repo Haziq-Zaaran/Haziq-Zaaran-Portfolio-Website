@@ -50,7 +50,7 @@ const Dashboard: React.FC = () => {
                       <img 
                         src={imageUrl} 
                         alt={dashboard.title}
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+                        className="w-full h-full object-cover transition-transform duration-700 hover:scale-105" 
                       />
                     </div>
                   ) : (

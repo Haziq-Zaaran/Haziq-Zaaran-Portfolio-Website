@@ -151,7 +151,7 @@ const DashboardsAdmin: React.FC = () => {
               <Plus size={16} className="mr-2" /> Add Dashboard
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Add New Dashboard</DialogTitle>
               <DialogDescription>
@@ -203,7 +203,7 @@ const DashboardsAdmin: React.FC = () => {
                 />
               </div>
             </div>
-            <DialogFooter>
+            <DialogFooter className="sticky bottom-0 pt-4 bg-white dark:bg-gray-800 mt-auto">
               <Button onClick={handleAddDashboard}>Add Dashboard</Button>
             </DialogFooter>
           </DialogContent>
@@ -244,7 +244,7 @@ const DashboardsAdmin: React.FC = () => {
                           <Edit size={16} />
                         </Button>
                       </DialogTrigger>
-                      <DialogContent>
+                      <DialogContent className="max-h-[90vh] overflow-y-auto">
                         <DialogHeader>
                           <DialogTitle>Edit Dashboard</DialogTitle>
                         </DialogHeader>
@@ -295,7 +295,7 @@ const DashboardsAdmin: React.FC = () => {
                             </div>
                           </div>
                         )}
-                        <DialogFooter>
+                        <DialogFooter className="sticky bottom-0 pt-4 bg-white dark:bg-gray-800 mt-auto">
                           <Button onClick={handleSaveEdit}>
                             <Save size={16} className="mr-2" />
                             Save Changes
