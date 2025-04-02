@@ -85,6 +85,7 @@ interface PortfolioContextType {
   hideProject: (id: number) => void;
   showProject: (id: number) => void;
   deleteProject: (id: number) => void;
+  addDashboard: (dashboard: Omit<Dashboard, 'id' | 'isHidden'>) => void;
   updateDashboard: (id: number, data: Partial<Dashboard>) => void;
   hideDashboard: (id: number) => void;
   showDashboard: (id: number) => void;
@@ -299,6 +300,17 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   };
 
   // Dashboard methods
+  const addDashboard = (dashboard: Omit<Dashboard, 'id' | 'isHidden'>) => {
+    const newId = portfolioData.dashboards.length > 0 
+      ? Math.max(...portfolioData.dashboards.map(d => d.id)) + 1 
+      : 1;
+    
+    setPortfolioData(prev => ({
+      ...prev,
+      dashboards: [...prev.dashboards, { ...dashboard, id: newId, isHidden: false }]
+    }));
+  };
+
   const updateDashboard = (id: number, data: Partial<Dashboard>) => {
     setPortfolioData(prev => ({
       ...prev,
@@ -359,6 +371,7 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         hideProject,
         showProject,
         deleteProject,
+        addDashboard,
         updateDashboard,
         hideDashboard,
         showDashboard,

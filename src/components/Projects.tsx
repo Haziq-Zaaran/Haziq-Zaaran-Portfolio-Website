@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { ArrowRight, ExternalLink, Github, Plus, FileCode } from 'lucide-react';
+import { ArrowRight, ExternalLink, Github, Plus, FileCode, Eye } from 'lucide-react';
 import AnimatedSection from './AnimatedSection';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
@@ -9,9 +9,21 @@ import ProjectForm from './ProjectForm';
 import { usePortfolio, Project } from '@/contexts/PortfolioContext';
 import { getImageKey, getImageUrl } from '@/utils/imageUtils';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 
-const ProjectCard: React.FC<{ project: Project; index: number }> = ({ project, index }) => {
+const ProjectCard: React.FC<{ project: Project; index: number; isAuthenticated: boolean }> = ({ project, index, isAuthenticated }) => {
   const imageUrl = getImageUrl(getImageKey('project', project.id), project.image);
+  const { toast } = useToast();
+
+  const handlePreview = () => {
+    // Display a toast when previewing
+    toast({
+      title: "Preview Mode",
+      description: `Previewing "${project.title}" project.`,
+    });
+    // Open the project demo in a new tab
+    window.open(project.demoLink, '_blank');
+  };
 
   return (
     <AnimatedSection
@@ -54,6 +66,17 @@ const ProjectCard: React.FC<{ project: Project; index: number }> = ({ project, i
             </a>
           </Button>
           <div className="flex gap-2">
+            {isAuthenticated && (
+              <Button
+                variant="ghost" 
+                size="icon"
+                onClick={handlePreview}
+                className="w-8 h-8 rounded-full flex items-center justify-center text-gray-600 hover:text-portfolio-purple hover:bg-gray-100 transition-colors"
+                title="Preview Project"
+              >
+                <Eye size={16} />
+              </Button>
+            )}
             <a
               href={project.demoLink}
               className="w-8 h-8 rounded-full flex items-center justify-center text-gray-600 hover:text-portfolio-purple hover:bg-gray-100 transition-colors"
@@ -120,7 +143,12 @@ const Projects: React.FC = () => {
         
         <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
           {visibleProjects.map((project, index) => (
-            <ProjectCard key={project.id} project={project} index={index} />
+            <ProjectCard 
+              key={project.id} 
+              project={project} 
+              index={index} 
+              isAuthenticated={isAuthenticated} 
+            />
           ))}
         </div>
         

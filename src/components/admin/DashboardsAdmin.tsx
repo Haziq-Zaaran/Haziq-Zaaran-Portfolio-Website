@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { Eye, EyeOff, Trash2, Edit, Plus, Save, Image as ImageIcon } from 'lucide-react';
+import { Eye, EyeOff, Trash2, Edit, Plus, Save, Image as ImageIcon, RefreshCw } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -52,6 +52,16 @@ const DashboardsAdmin: React.FC = () => {
     link: '',
     imageUrl: ''
   });
+  const [refreshKey, setRefreshKey] = useState(0); // Add a refresh key to force re-render
+
+  // Function to refresh the component
+  const refreshDashboards = () => {
+    setRefreshKey(prevKey => prevKey + 1);
+    toast({
+      title: "Refreshed",
+      description: "Dashboard list has been refreshed.",
+    });
+  };
 
   const handleVisibilityToggle = (dashboard: Dashboard) => {
     if (dashboard.isHidden) {
@@ -83,16 +93,48 @@ const DashboardsAdmin: React.FC = () => {
   };
 
   const handleAddDashboard = () => {
-    // Logic to add dashboard
-    console.log('Adding dashboard:', newDashboard);
+    // Check if all required fields are filled
+    if (!newDashboard.title || !newDashboard.description || !newDashboard.type || !newDashboard.link) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      });
+      return;
+    }
     
-    // If we had a proper addDashboard function in the context:
-    // addDashboard({
-    //   ...newDashboard,
-    //   imageUrl: dashboardImage
-    // });
+    // Add the new dashboard to the portfolio context
+    // Since addDashboard is not explicitly defined in the context, we'll simulate it
+    // by finding the next available ID and then using updateDashboard
+    const newId = portfolioData.dashboards.length > 0 
+      ? Math.max(...portfolioData.dashboards.map(d => d.id)) + 1 
+      : 1;
     
-    // For now, we'll simulate it by showing a toast
+    const newDashboardItem: Dashboard = {
+      id: newId,
+      title: newDashboard.title,
+      description: newDashboard.description,
+      type: newDashboard.type,
+      link: newDashboard.link,
+      isHidden: false
+    };
+    
+    // Save the dashboard image to localStorage if it exists
+    if (dashboardImage) {
+      const imageKey = getImageKey('dashboard', newId);
+      localStorage.setItem(imageKey, dashboardImage);
+    }
+    
+    // Update the portfolioData with the new dashboard
+    // We're accessing the internal implementation here, which is not ideal
+    // but necessary due to the lack of an explicit addDashboard function
+    const updatedDashboards = [...portfolioData.dashboards, newDashboardItem];
+    const portfolioDataCopy = {...portfolioData, dashboards: updatedDashboards};
+    localStorage.setItem('portfolioData', JSON.stringify(portfolioDataCopy));
+    
+    // Force a refresh to show the new dashboard
+    refreshDashboards();
+    
     toast({
       title: "Dashboard Added",
       description: `"${newDashboard.title}" has been added to your portfolio.`,
@@ -125,6 +167,8 @@ const DashboardsAdmin: React.FC = () => {
         description: `"${editingDashboard.title}" has been updated.`,
       });
       
+      // Force a refresh to show the updated dashboard
+      refreshDashboards();
       setEditingDashboard(null);
     }
   };
@@ -134,6 +178,10 @@ const DashboardsAdmin: React.FC = () => {
       // Save to localStorage for existing dashboard
       const imageKey = getImageKey('dashboard', dashboardId);
       localStorage.setItem(imageKey, dataUrl);
+      toast({
+        title: "Image Saved",
+        description: "Dashboard image has been saved.",
+      });
     } else {
       // For new dashboard
       setDashboardImage(dataUrl);
@@ -142,9 +190,19 @@ const DashboardsAdmin: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" key={refreshKey}>
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Manage Dashboards</h2>
+        <div className="flex items-center gap-2">
+          <h2 className="text-2xl font-bold">Manage Dashboards</h2>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={refreshDashboards}
+            title="Refresh Dashboards"
+          >
+            <RefreshCw size={16} />
+          </Button>
+        </div>
         <Dialog>
           <DialogTrigger asChild>
             <Button>
@@ -165,6 +223,7 @@ const DashboardsAdmin: React.FC = () => {
                   id="title"
                   value={newDashboard.title}
                   onChange={(e) => setNewDashboard({...newDashboard, title: e.target.value})}
+                  placeholder="Dashboard Title"
                 />
               </div>
               <div className="space-y-2">
@@ -173,6 +232,7 @@ const DashboardsAdmin: React.FC = () => {
                   id="description"
                   value={newDashboard.description}
                   onChange={(e) => setNewDashboard({...newDashboard, description: e.target.value})}
+                  placeholder="Describe what this dashboard shows"
                 />
               </div>
               <div className="space-y-2">

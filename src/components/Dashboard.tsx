@@ -1,14 +1,17 @@
 
 import React from 'react';
-import { LineChart, BarChart, AreaChart, Monitor, ExternalLink } from 'lucide-react';
+import { LineChart, BarChart, AreaChart, Monitor, ExternalLink, Eye } from 'lucide-react';
 import AnimatedSection from './AnimatedSection';
 import { usePortfolio } from '@/contexts/PortfolioContext';
 import { getImageKey, getImageUrl } from '@/utils/imageUtils';
 import { useAuth } from '@/contexts/AuthContext';
+import { Button } from './ui/button';
+import { useToast } from '@/hooks/use-toast';
 
 const Dashboard: React.FC = () => {
   const { portfolioData } = usePortfolio();
   const { isAuthenticated } = useAuth();
+  const { toast } = useToast();
   
   // Filter out hidden dashboards
   const visibleDashboards = portfolioData.dashboards.filter(dashboard => !dashboard.isHidden);
@@ -19,6 +22,16 @@ const Dashboard: React.FC = () => {
     'Power BI': LineChart,
     'Plotly': AreaChart,
     'Grafana': Monitor
+  };
+
+  const handlePreview = (title: string, link: string) => {
+    // Display a toast when previewing
+    toast({
+      title: "Preview Mode",
+      description: `Previewing "${title}" dashboard.`,
+    });
+    // Open the dashboard link in a new tab
+    window.open(link, '_blank');
   };
 
   return (
@@ -70,14 +83,26 @@ const Dashboard: React.FC = () => {
                       </div>
                       <h3 className="font-bold text-xl mb-2 text-gray-800 dark:text-gray-100">{dashboard.title}</h3>
                       <p className="text-gray-600 dark:text-gray-300 mb-6 flex-1">{dashboard.description}</p>
-                      <a 
-                        href={dashboard.link} 
-                        className="self-start px-4 py-2 bg-portfolio-purple/10 text-portfolio-purple rounded-lg font-medium flex items-center gap-2 hover:bg-portfolio-purple/20 transition-colors"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        View Dashboard <ExternalLink size={16} />
-                      </a>
+                      <div className="flex gap-3 items-center">
+                        <a 
+                          href={dashboard.link} 
+                          className="px-4 py-2 bg-portfolio-purple/10 text-portfolio-purple rounded-lg font-medium flex items-center gap-2 hover:bg-portfolio-purple/20 transition-colors"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          View Dashboard <ExternalLink size={16} />
+                        </a>
+                        {isAuthenticated && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handlePreview(dashboard.title, dashboard.link)}
+                            className="flex items-center gap-1"
+                          >
+                            <Eye size={14} /> Preview
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </AnimatedSection>
