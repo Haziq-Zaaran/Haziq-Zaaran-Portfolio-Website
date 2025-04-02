@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { Eye, EyeOff, Trash2, Edit, Plus, Save, Image as ImageIcon, RefreshCw } from 'lucide-react';
+import { Eye, EyeOff, Trash2, Edit, Plus, Save, Image as ImageIcon, RefreshCw, Star, StarOff } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,6 +28,7 @@ import {
   DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { Switch } from "@/components/ui/switch";
 import ImageUploader from '@/components/ui/image-uploader';
 import { getImageKey, getImageUrl } from '@/utils/imageUtils';
 
@@ -38,10 +39,11 @@ interface DashboardFormData {
   type: string;
   link: string;
   imageUrl?: string;
+  featured?: boolean;
 }
 
 const DashboardsAdmin: React.FC = () => {
-  const { portfolioData, hideDashboard, showDashboard, deleteDashboard, updateDashboard } = usePortfolio();
+  const { portfolioData, hideDashboard, showDashboard, deleteDashboard, updateDashboard, addDashboard: contextAddDashboard } = usePortfolio();
   const { toast } = useToast();
   const [editingDashboard, setEditingDashboard] = useState<Dashboard | null>(null);
   const [dashboardImage, setDashboardImage] = useState<string>('');
@@ -50,7 +52,8 @@ const DashboardsAdmin: React.FC = () => {
     description: '',
     type: '',
     link: '',
-    imageUrl: ''
+    imageUrl: '',
+    featured: false
   });
   const [refreshKey, setRefreshKey] = useState(0); // Add a refresh key to force re-render
 
@@ -79,6 +82,26 @@ const DashboardsAdmin: React.FC = () => {
     }
   };
 
+  const handleToggleFeatured = (dashboard: Dashboard) => {
+    const newFeaturedState = !dashboard.featured;
+
+    // If setting as featured, unset any other featured dashboards first
+    if (newFeaturedState) {
+      portfolioData.dashboards.forEach(d => {
+        if (d.id !== dashboard.id && d.featured) {
+          updateDashboard(d.id, { featured: false });
+        }
+      });
+    }
+
+    updateDashboard(dashboard.id, { featured: newFeaturedState });
+    
+    toast({
+      title: newFeaturedState ? "Set as Featured" : "Removed Featured Status",
+      description: `"${dashboard.title}" has been ${newFeaturedState ? "set as" : "removed from"} the featured dashboard.`,
+    });
+  };
+
   const handleDelete = (dashboardId: number, dashboardTitle: string) => {
     // Also remove the dashboard image from localStorage
     const imageKey = getImageKey('dashboard', dashboardId);
@@ -103,37 +126,32 @@ const DashboardsAdmin: React.FC = () => {
       return;
     }
     
-    // Add the new dashboard to the portfolio context
-    // Since addDashboard is not explicitly defined in the context, we'll simulate it
-    // by finding the next available ID and then using updateDashboard
-    const newId = portfolioData.dashboards.length > 0 
-      ? Math.max(...portfolioData.dashboards.map(d => d.id)) + 1 
-      : 1;
+    // Determine if this should be the featured dashboard (if it's the first one or if none are featured)
+    const shouldBeDefaultFeatured = portfolioData.dashboards.length === 0 || 
+      !portfolioData.dashboards.some(d => d.featured && !d.isHidden);
     
-    const newDashboardItem: Dashboard = {
-      id: newId,
+    // Create the new dashboard
+    const newDashboardItem = {
       title: newDashboard.title,
       description: newDashboard.description,
       type: newDashboard.type,
       link: newDashboard.link,
-      isHidden: false
+      featured: newDashboard.featured || shouldBeDefaultFeatured
     };
+    
+    // Add the dashboard using the context method
+    contextAddDashboard(newDashboardItem);
+    
+    // Get the new dashboard ID to save the image
+    const newId = portfolioData.dashboards.length > 0 
+      ? Math.max(...portfolioData.dashboards.map(d => d.id)) + 1 
+      : 1;
     
     // Save the dashboard image to localStorage if it exists
     if (dashboardImage) {
       const imageKey = getImageKey('dashboard', newId);
       localStorage.setItem(imageKey, dashboardImage);
     }
-    
-    // Update the portfolioData with the new dashboard
-    // We're accessing the internal implementation here, which is not ideal
-    // but necessary due to the lack of an explicit addDashboard function
-    const updatedDashboards = [...portfolioData.dashboards, newDashboardItem];
-    const portfolioDataCopy = {...portfolioData, dashboards: updatedDashboards};
-    localStorage.setItem('portfolioData', JSON.stringify(portfolioDataCopy));
-    
-    // Force a refresh to show the new dashboard
-    refreshDashboards();
     
     toast({
       title: "Dashboard Added",
@@ -146,21 +164,19 @@ const DashboardsAdmin: React.FC = () => {
       description: '',
       type: '',
       link: '',
-      imageUrl: ''
+      imageUrl: '',
+      featured: false
     });
     setDashboardImage('');
+    
+    // Force a refresh to show the new dashboard
+    refreshDashboards();
   };
 
   const handleSaveEdit = () => {
     if (editingDashboard) {
-      // Get the saved image from localStorage or use the current image
-      const imageKey = getImageKey('dashboard', editingDashboard.id);
-      const savedImage = localStorage.getItem(imageKey);
-      
-      updateDashboard(editingDashboard.id, {
-        ...editingDashboard,
-        // We would add imageUrl to the updateDashboard if it was part of the Dashboard type
-      });
+      // Update the dashboard
+      updateDashboard(editingDashboard.id, editingDashboard);
       
       toast({
         title: "Dashboard Updated",
@@ -253,6 +269,14 @@ const DashboardsAdmin: React.FC = () => {
                   placeholder="https://"
                 />
               </div>
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="featured"
+                  checked={newDashboard.featured}
+                  onCheckedChange={(checked) => setNewDashboard({...newDashboard, featured: checked})}
+                />
+                <Label htmlFor="featured">Set as featured dashboard</Label>
+              </div>
               <div className="space-y-2">
                 <Label>Dashboard Image</Label>
                 <ImageUploader
@@ -282,7 +306,14 @@ const DashboardsAdmin: React.FC = () => {
             >
               <CardHeader className="pb-2">
                 <div className="flex justify-between items-start">
-                  <CardTitle className="text-lg">{dashboard.title}</CardTitle>
+                  <div>
+                    <CardTitle className="text-lg">{dashboard.title}</CardTitle>
+                    {dashboard.featured && (
+                      <span className="inline-block mt-1 px-3 py-1 bg-amber-100 text-amber-800 text-xs font-medium rounded-full">
+                        Featured
+                      </span>
+                    )}
+                  </div>
                   <div className="flex space-x-2">
                     <Button
                       variant="ghost"
@@ -291,6 +322,15 @@ const DashboardsAdmin: React.FC = () => {
                       title={dashboard.isHidden ? "Show Dashboard" : "Hide Dashboard"}
                     >
                       {dashboard.isHidden ? <Eye size={16} /> : <EyeOff size={16} />}
+                    </Button>
+                    
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleToggleFeatured(dashboard)}
+                      title={dashboard.featured ? "Remove from featured" : "Set as featured"}
+                    >
+                      {dashboard.featured ? <StarOff size={16} /> : <Star size={16} />}
                     </Button>
                     
                     <Dialog>
@@ -341,6 +381,14 @@ const DashboardsAdmin: React.FC = () => {
                                 value={editingDashboard.link}
                                 onChange={(e) => setEditingDashboard({...editingDashboard, link: e.target.value})}
                               />
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <Switch
+                                id="edit-featured"
+                                checked={!!editingDashboard.featured}
+                                onCheckedChange={(checked) => setEditingDashboard({...editingDashboard, featured: checked})}
+                              />
+                              <Label htmlFor="edit-featured">Set as featured dashboard</Label>
                             </div>
                             <div className="space-y-2">
                               <Label>Dashboard Image</Label>

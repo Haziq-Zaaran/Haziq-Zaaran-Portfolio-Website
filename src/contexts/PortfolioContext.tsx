@@ -50,6 +50,7 @@ export interface Dashboard {
   type: string;
   link: string;
   isHidden: boolean;
+  featured?: boolean; // New field to mark a dashboard as featured
 }
 
 export interface ContactInfo {
@@ -66,7 +67,7 @@ export interface HeroData {
   description: string;
   heroImage?: string;
   navigationTitle?: string;
-  portfolioHighlight?: string; // New field for the "Portfolio" text
+  portfolioHighlight?: string; // Field for the "Portfolio" text
 }
 
 export interface PortfolioData {
@@ -176,7 +177,8 @@ const initialPortfolioData: PortfolioData = {
       description: "Interactive visualization of sales trends across regions and product categories.",
       type: "Tableau",
       link: "#",
-      isHidden: false
+      isHidden: false,
+      featured: true // Set the first dashboard as featured by default
     },
     {
       id: 2,
@@ -305,13 +307,32 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       ? Math.max(...portfolioData.dashboards.map(d => d.id)) + 1 
       : 1;
     
+    // If this is the first dashboard, mark it as featured by default
+    const isFeatured = portfolioData.dashboards.length === 0 || 
+      !portfolioData.dashboards.some(d => d.featured);
+    
     setPortfolioData(prev => ({
       ...prev,
-      dashboards: [...prev.dashboards, { ...dashboard, id: newId, isHidden: false }]
+      dashboards: [...prev.dashboards, { 
+        ...dashboard, 
+        id: newId, 
+        isHidden: false,
+        featured: isFeatured 
+      }]
     }));
   };
 
   const updateDashboard = (id: number, data: Partial<Dashboard>) => {
+    // If we're setting this dashboard as featured, unmark any other featured dashboard
+    if (data.featured) {
+      setPortfolioData(prev => ({
+        ...prev,
+        dashboards: prev.dashboards.map(dashboard => 
+          dashboard.id !== id ? { ...dashboard, featured: false } : dashboard
+        )
+      }));
+    }
+    
     setPortfolioData(prev => ({
       ...prev,
       dashboards: prev.dashboards.map(dashboard => 
