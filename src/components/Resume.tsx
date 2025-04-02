@@ -1,14 +1,11 @@
-
 import React, { useState, useEffect } from 'react';
-import { FileText, Download, Briefcase, Calendar, GraduationCap, Upload, Trash2, Eye, FilePlus } from 'lucide-react';
+import { FileText, Download, Briefcase, Calendar, GraduationCap, Upload, Trash2, FilePlus } from 'lucide-react';
 import AnimatedSection from './AnimatedSection';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { getStoredResume, storeResume, removeStoredResume, ResumeFile } from '@/models/ResumeModel';
 
-// Customize your professional experience
 const experiences = [
   {
     role: "Senior Data Analyst",
@@ -45,7 +42,6 @@ const experiences = [
   }
 ];
 
-// Customize your education
 const education = [
   {
     degree: "Master of Science in Data Science",
@@ -61,7 +57,6 @@ const education = [
   }
 ];
 
-// Customize your certifications
 const certifications = [
   {
     name: "Microsoft Certified: Data Analyst Associate",
@@ -83,7 +78,6 @@ const certifications = [
 const Resume: React.FC = () => {
   const [resumeFile, setResumeFile] = useState<ResumeFile | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [previewOpen, setPreviewOpen] = useState(false);
   const { isAuthenticated } = useAuth();
 
   useEffect(() => {
@@ -199,12 +193,6 @@ const Resume: React.FC = () => {
     }
   };
 
-  const handlePreview = () => {
-    if (resumeFile) {
-      setPreviewOpen(true);
-    }
-  };
-
   return (
     <section id="resume" className="py-20">
       <div className="section-container">
@@ -222,15 +210,6 @@ const Resume: React.FC = () => {
                 >
                   <Download size={18} />
                   Download Resume
-                </Button>
-                
-                <Button 
-                  variant="outline"
-                  onClick={handlePreview}
-                  className="inline-flex items-center gap-2"
-                >
-                  <Eye size={18} />
-                  Preview Resume
                 </Button>
                 
                 {isAuthenticated && (
@@ -358,42 +337,6 @@ const Resume: React.FC = () => {
           </AnimatedSection>
         </div>
       </div>
-      
-      <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
-        <DialogContent className="max-w-4xl w-[90vw] max-h-[90vh] overflow-hidden flex flex-col">
-          <DialogHeader>
-            <DialogTitle>Resume Preview - {resumeFile?.fileName}</DialogTitle>
-            <DialogDescription>
-              Your uploaded resume document
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="flex-1 min-h-0 mt-4 overflow-auto">
-            {resumeFile?.fileType === 'application/pdf' ? (
-              <iframe 
-                src={resumeFile.url} 
-                className="w-full h-full min-h-[70vh] border rounded"
-                title="Resume Preview"
-              ></iframe>
-            ) : (
-              <div className="flex items-center justify-center h-full min-h-[50vh] border rounded p-4 bg-gray-50 dark:bg-gray-900">
-                <div className="text-center">
-                  <FileText size={48} className="mx-auto mb-4 text-gray-400" />
-                  <h3 className="text-lg font-medium">Preview not available</h3>
-                  <p className="mt-2 text-sm text-gray-500">
-                    This file type ({resumeFile?.fileType.split('/')[1]}) cannot be previewed directly.
-                    <br />Please download the file to view it.
-                  </p>
-                  <Button onClick={handleDownload} className="mt-4">
-                    <Download size={16} className="mr-2" />
-                    Download to view
-                  </Button>
-                </div>
-              </div>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
     </section>
   );
 };
