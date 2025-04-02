@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { FileText, Download, Briefcase, Calendar, GraduationCap, Upload, Trash2, Eye, FilePlus } from 'lucide-react';
 import AnimatedSection from './AnimatedSection';
@@ -98,6 +99,11 @@ const Resume: React.FC = () => {
       link.href = resumeFile.url;
       link.download = resumeFile.fileName;
       link.click();
+      
+      toast({
+        title: "Download started",
+        description: `Downloading ${resumeFile.fileName}`,
+      });
     } else {
       toast({
         title: "Resume not available",
