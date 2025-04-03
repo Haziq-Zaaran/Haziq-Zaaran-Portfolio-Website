@@ -22,30 +22,26 @@ const AdminHeader: React.FC<AdminHeaderProps> = ({ activeTab, setActiveTab }) =>
     { id: 'contact', name: 'Contact', icon: Mail },
   ];
   
-  // Enhanced navigation function with better browser compatibility
+  // Enhanced cross-browser compatible navigation function
   const handleBack = () => {
-    // Store the fact that user initiated a back navigation
+    // Store the fact that user initiated a back navigation for cross-browser compatibility
     try {
       sessionStorage.setItem('userInitiatedBack', 'true');
     } catch (e) {
       console.warn('Session storage not available:', e);
     }
     
-    // If there's history and the referrer is from the same host, go back
-    // This works better across different browsers
-    if (
-      window.history.length > 1 && 
-      document.referrer && 
-      document.referrer.includes(window.location.host)
-    ) {
+    // Universal solution that works across browsers
+    if (window.history.length > 1) {
+      // Check if we can navigate back
       navigate(-1);
     } else {
-      // Fallback to home page if no valid history
+      // Fallback to home page
       navigate('/');
     }
   };
 
-  // Add event listener for browser back button to maintain state
+  // Add event listener for browser back button with cross-browser checks
   useEffect(() => {
     const handlePopState = () => {
       try {
