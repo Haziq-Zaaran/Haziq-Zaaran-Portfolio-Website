@@ -10,52 +10,142 @@ import HeroAdmin from '@/components/admin/HeroAdmin';
 import SkillsAdmin from '@/components/admin/SkillsAdmin';
 import SafeAdminView from '@/components/admin/SafeAdminView';
 import { SkillsProvider } from '@/contexts/SkillsContext';
+import { toast } from '@/components/ui/use-toast';
+
+// Feature detection helpers
+const browserSupport = {
+  checkGridSupport: () => 'CSS' in window && CSS.supports('display', 'grid'),
+  checkFlexboxSupport: () => 'CSS' in window && CSS.supports('display', 'flex'),
+  checkLocalStorageSupport: () => {
+    try {
+      const testKey = '__test__';
+      localStorage.setItem(testKey, testKey);
+      localStorage.removeItem(testKey);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  },
+  checkSessionStorageSupport: () => {
+    try {
+      const testKey = '__test__';
+      sessionStorage.setItem(testKey, testKey);
+      sessionStorage.removeItem(testKey);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+};
 
 const Admin: React.FC = () => {
   const [activeTab, setActiveTab] = useState('hero');
   const [isMounted, setIsMounted] = useState(false);
+  const [browserChecksComplete, setBrowserChecksComplete] = useState(false);
   
   // This ensures that client-side hydration is complete before rendering
   // to avoid inconsistencies across browsers
   useEffect(() => {
     setIsMounted(true);
     
-    // Add CSS check for better cross-browser diagnostics
-    const supportsGrid = 'CSS' in window && CSS.supports('display', 'grid');
-    const supportsFlexbox = 'CSS' in window && CSS.supports('display', 'flex');
+    // Enhanced browser compatibility checks
+    const supportsGrid = browserSupport.checkGridSupport();
+    const supportsFlexbox = browserSupport.checkFlexboxSupport();
+    const supportsLocalStorage = browserSupport.checkLocalStorageSupport();
+    const supportsSessionStorage = browserSupport.checkSessionStorageSupport();
     
-    console.log('Browser compatibility check:', {
+    const compatReport = {
       supportsGrid,
       supportsFlexbox,
-      userAgent: navigator.userAgent
-    });
+      supportsLocalStorage,
+      supportsSessionStorage,
+      userAgent: navigator.userAgent,
+      language: navigator.language,
+      dpr: window.devicePixelRatio,
+      screenWidth: window.innerWidth,
+      mediaQueries: {
+        prefersReducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+        prefersDarkMode: window.matchMedia('(prefers-color-scheme: dark)').matches
+      }
+    };
+    
+    console.log('Browser compatibility report:', compatReport);
+    
+    // Warn if we have compatibility issues
+    if (!supportsGrid || !supportsFlexbox) {
+      toast({
+        title: "Browser Compatibility Issue",
+        description: "Your browser may not support all features of this application. Consider upgrading to the latest version.",
+        variant: "destructive",
+      });
+    }
+    
+    // Cache-busting technique for browser-specific resources
+    const script = document.createElement('script');
+    script.setAttribute('cache-version', new Date().toISOString().split('T')[0]);
+    script.setAttribute('data-testid', 'admin-compatibility-script');
+    document.head.appendChild(script);
+    
+    setBrowserChecksComplete(true);
     
   }, []);
   
-  // Handle tab changes and save to localStorage for persistence across sessions
+  // Handle tab changes with improved persistence across different browsers
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
+    // Try multiple storage mechanisms for better cross-browser support
     try {
-      localStorage.setItem('adminActiveTab', tab);
+      // Try localStorage first
+      if (browserSupport.checkLocalStorageSupport()) {
+        localStorage.setItem('adminActiveTab', tab);
+      }
+      // Fallback to sessionStorage
+      else if (browserSupport.checkSessionStorageSupport()) {
+        sessionStorage.setItem('adminActiveTab', tab);
+      }
+      // Could add more fallbacks like cookies if needed
     } catch (e) {
-      console.warn('Unable to save tab state to localStorage:', e);
+      console.warn('Unable to save tab state:', e);
     }
   };
   
-  // Restore the active tab from localStorage
+  // Restore the active tab with improved cross-browser support
   useEffect(() => {
+    // Only proceed if mounted and browser checks are done
+    if (!isMounted || !browserChecksComplete) return;
+    
     try {
-      const savedTab = localStorage.getItem('adminActiveTab');
+      let savedTab: string | null = null;
+      
+      // Try local storage first
+      if (browserSupport.checkLocalStorageSupport()) {
+        savedTab = localStorage.getItem('adminActiveTab');
+      }
+      
+      // Fall back to session storage
+      if (!savedTab && browserSupport.checkSessionStorageSupport()) {
+        savedTab = sessionStorage.getItem('adminActiveTab');
+      }
+      
+      // Apply the saved tab if found
       if (savedTab) {
         setActiveTab(savedTab);
       }
     } catch (e) {
-      console.warn('Unable to read from localStorage:', e);
+      console.warn('Unable to read stored tab:', e);
     }
-  }, []);
+  }, [isMounted, browserChecksComplete]);
   
-  if (!isMounted) {
-    return <div className="min-h-screen flex items-center justify-center">Loading admin panel...</div>;
+  // Show loading state until everything is ready
+  if (!isMounted || !browserChecksComplete) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900/50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-portfolio-purple mx-auto mb-4"></div>
+          <p className="text-gray-700 dark:text-gray-300">Loading admin panel...</p>
+        </div>
+      </div>
+    );
   }
   
   return (
@@ -75,12 +165,12 @@ const Admin: React.FC = () => {
             {(data) => (
               <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">
                 <TabsList className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm">
-                  <TabsTrigger value="hero">Hero</TabsTrigger>
-                  <TabsTrigger value="about">About</TabsTrigger>
-                  <TabsTrigger value="projects">Projects</TabsTrigger>
-                  <TabsTrigger value="dashboards">Dashboards</TabsTrigger>
-                  <TabsTrigger value="skills">Skills</TabsTrigger>
-                  <TabsTrigger value="contact">Contact</TabsTrigger>
+                  <TabsTrigger value="hero" data-testid="admin-tab-trigger-hero">Hero</TabsTrigger>
+                  <TabsTrigger value="about" data-testid="admin-tab-trigger-about">About</TabsTrigger>
+                  <TabsTrigger value="projects" data-testid="admin-tab-trigger-projects">Projects</TabsTrigger>
+                  <TabsTrigger value="dashboards" data-testid="admin-tab-trigger-dashboards">Dashboards</TabsTrigger>
+                  <TabsTrigger value="skills" data-testid="admin-tab-trigger-skills">Skills</TabsTrigger>
+                  <TabsTrigger value="contact" data-testid="admin-tab-trigger-contact">Contact</TabsTrigger>
                 </TabsList>
                 
                 <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">

@@ -19,6 +19,8 @@ const buttonVariants = cva(
           "bg-secondary text-secondary-foreground hover:bg-secondary/80 focus:ring-2 focus:ring-secondary/30",
         ghost: "hover:bg-accent hover:text-accent-foreground focus:ring-2 focus:ring-accent/30",
         link: "text-primary underline-offset-4 hover:underline focus:ring-2 focus:ring-primary/30",
+        // Add a new variant specifically for the back button
+        back: "text-gray-600 dark:text-gray-300 hover:text-portfolio-purple hover:bg-gray-100 dark:hover:bg-gray-700 focus:ring-2 focus:ring-portfolio-purple/30 focus:ring-offset-1"
       },
       size: {
         default: "h-10 px-4 py-2",
@@ -48,6 +50,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
         {...props}
+        data-testid={props["data-testid"] || `button-${variant || 'default'}`}
       />
     )
   }
