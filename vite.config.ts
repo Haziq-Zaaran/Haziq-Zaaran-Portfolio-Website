@@ -5,6 +5,9 @@ import path from "path";
 import { componentTagger } from "lovable-tagger";
 import autoprefixer from 'autoprefixer';
 
+// Generate a unique build ID based on current timestamp
+const BUILD_ID = new Date().toISOString();
+
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   server: {
@@ -32,9 +35,9 @@ export default defineConfig(({ mode }) => ({
           ui: ['@/components/ui'],
         },
         // Adds content hashes to asset filenames for cache busting
-        entryFileNames: 'assets/[name].[hash].js',
-        chunkFileNames: 'assets/[name].[hash].js',
-        assetFileNames: 'assets/[name].[hash].[ext]'
+        entryFileNames: 'assets/[name].[hash].[timestamp].js',
+        chunkFileNames: 'assets/[name].[hash].[timestamp].js',
+        assetFileNames: 'assets/[name].[hash].[timestamp].[ext]'
       }
     },
     // Target specific browser versions for better compatibility
@@ -53,5 +56,9 @@ export default defineConfig(({ mode }) => ({
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
+  },
+  // Add build ID to enable cache busting
+  define: {
+    __BUILD_ID__: JSON.stringify(BUILD_ID),
   }
 }));

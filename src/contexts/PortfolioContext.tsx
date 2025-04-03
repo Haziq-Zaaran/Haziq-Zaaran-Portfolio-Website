@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { setVersionedItem, getVersionedItem } from '@/utils/storageUtils';
 
 // Define types for all editable portfolio sections
 export interface Project {
@@ -225,11 +226,11 @@ const initialPortfolioData: PortfolioData = {
 const PortfolioContext = createContext<PortfolioContextType | undefined>(undefined);
 
 export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Load data from localStorage or use initial data
+  // Load data from versioned localStorage or use initial data
   const loadInitialData = (): PortfolioData => {
     try {
-      const savedData = localStorage.getItem('portfolioData');
-      return savedData ? JSON.parse(savedData) : initialPortfolioData;
+      const savedData = getVersionedItem('portfolioData');
+      return savedData ? savedData : initialPortfolioData;
     } catch (error) {
       console.error('Error loading data from localStorage:', error);
       return initialPortfolioData;
@@ -238,10 +239,16 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   const [portfolioData, setPortfolioData] = useState<PortfolioData>(loadInitialData);
 
-  // Save data to localStorage whenever it changes
+  // Save data to versioned localStorage whenever it changes
   useEffect(() => {
     try {
-      localStorage.setItem('portfolioData', JSON.stringify(portfolioData));
+      setVersionedItem('portfolioData', portfolioData);
+      
+      // Broadcast change to other tabs/windows
+      const event = new CustomEvent('portfolio-data-updated', { 
+        detail: { timestamp: new Date().getTime() } 
+      });
+      window.dispatchEvent(event);
     } catch (error) {
       console.error('Error saving data to localStorage:', error);
     }

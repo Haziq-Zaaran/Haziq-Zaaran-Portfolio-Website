@@ -11,6 +11,7 @@ import Footer from '@/components/Footer';
 import Messages from '@/components/Messages';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { SkillsProvider } from '@/contexts/SkillsContext';
+import VersionChecker from '@/components/VersionChecker';
 
 // Lazy load the Hero component
 const Hero = React.lazy(() => import('@/components/Hero'));
@@ -42,6 +43,7 @@ const Index: React.FC = () => {
     <SkillsProvider>
       <div className="min-h-screen bg-background text-foreground">
         <Navbar />
+        <VersionChecker />
         <main>
           <ErrorBoundary componentName="Hero Section">
             <Suspense fallback={<div className="h-screen flex items-center justify-center">Loading hero section...</div>}>

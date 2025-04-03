@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AdminHeader from '@/components/admin/AdminHeader';
@@ -11,8 +10,8 @@ import SkillsAdmin from '@/components/admin/SkillsAdmin';
 import SafeAdminView from '@/components/admin/SafeAdminView';
 import { SkillsProvider } from '@/contexts/SkillsContext';
 import { toast } from '@/components/ui/use-toast';
+import VersionChecker from '@/components/VersionChecker';
 
-// Feature detection helpers
 const browserSupport = {
   checkGridSupport: () => 'CSS' in window && CSS.supports('display', 'grid'),
   checkFlexboxSupport: () => 'CSS' in window && CSS.supports('display', 'flex'),
@@ -43,12 +42,9 @@ const Admin: React.FC = () => {
   const [isMounted, setIsMounted] = useState(false);
   const [browserChecksComplete, setBrowserChecksComplete] = useState(false);
   
-  // This ensures that client-side hydration is complete before rendering
-  // to avoid inconsistencies across browsers
   useEffect(() => {
     setIsMounted(true);
     
-    // Enhanced browser compatibility checks
     const supportsGrid = browserSupport.checkGridSupport();
     const supportsFlexbox = browserSupport.checkFlexboxSupport();
     const supportsLocalStorage = browserSupport.checkLocalStorageSupport();
@@ -71,7 +67,6 @@ const Admin: React.FC = () => {
     
     console.log('Browser compatibility report:', compatReport);
     
-    // Warn if we have compatibility issues
     if (!supportsGrid || !supportsFlexbox) {
       toast({
         title: "Browser Compatibility Issue",
@@ -80,54 +75,42 @@ const Admin: React.FC = () => {
       });
     }
     
-    // Cache-busting technique for browser-specific resources
     const script = document.createElement('script');
     script.setAttribute('cache-version', new Date().toISOString().split('T')[0]);
     script.setAttribute('data-testid', 'admin-compatibility-script');
     document.head.appendChild(script);
     
     setBrowserChecksComplete(true);
-    
   }, []);
   
-  // Handle tab changes with improved persistence across different browsers
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
-    // Try multiple storage mechanisms for better cross-browser support
     try {
-      // Try localStorage first
       if (browserSupport.checkLocalStorageSupport()) {
         localStorage.setItem('adminActiveTab', tab);
       }
-      // Fallback to sessionStorage
       else if (browserSupport.checkSessionStorageSupport()) {
         sessionStorage.setItem('adminActiveTab', tab);
       }
-      // Could add more fallbacks like cookies if needed
     } catch (e) {
       console.warn('Unable to save tab state:', e);
     }
   };
   
-  // Restore the active tab with improved cross-browser support
   useEffect(() => {
-    // Only proceed if mounted and browser checks are done
     if (!isMounted || !browserChecksComplete) return;
     
     try {
       let savedTab: string | null = null;
       
-      // Try local storage first
       if (browserSupport.checkLocalStorageSupport()) {
         savedTab = localStorage.getItem('adminActiveTab');
       }
       
-      // Fall back to session storage
       if (!savedTab && browserSupport.checkSessionStorageSupport()) {
         savedTab = sessionStorage.getItem('adminActiveTab');
       }
       
-      // Apply the saved tab if found
       if (savedTab) {
         setActiveTab(savedTab);
       }
@@ -136,7 +119,6 @@ const Admin: React.FC = () => {
     }
   }, [isMounted, browserChecksComplete]);
   
-  // Show loading state until everything is ready
   if (!isMounted || !browserChecksComplete) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900/50">
@@ -152,6 +134,7 @@ const Admin: React.FC = () => {
     <SkillsProvider>
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900/50 pb-12">
         <AdminHeader activeTab={activeTab} setActiveTab={handleTabChange} />
+        <VersionChecker />
         
         <main className="container max-w-6xl mx-auto p-4 md:p-6 pt-20">
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 mb-6">
